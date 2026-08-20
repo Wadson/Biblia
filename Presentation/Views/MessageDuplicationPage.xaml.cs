@@ -1,0 +1,1 @@
+using Biblia.Presentation.ViewModels;namespace Biblia.Presentation.Views;public partial class MessageDuplicationPage:ContentPage{private readonly MessageDuplicationViewModel _vm;public MessageDuplicationPage(MessageDuplicationViewModel vm){InitializeComponent();BindingContext=_vm=vm;Loaded+=(_,_)=>_vm.LoadCommand.Execute(null);}}

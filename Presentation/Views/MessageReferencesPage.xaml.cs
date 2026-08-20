@@ -1,0 +1,1 @@
+using Biblia.Presentation.ViewModels;namespace Biblia.Presentation.Views;public partial class MessageReferencesPage:ContentPage{private readonly MessageReferencesViewModel _vm;public MessageReferencesPage(MessageReferencesViewModel vm){InitializeComponent();BindingContext=_vm=vm;Loaded+=(_,_)=>_vm.LoadCommand.Execute(null);}}

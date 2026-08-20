@@ -1,0 +1,1 @@
+using Biblia.Presentation.ViewModels;namespace Biblia.Presentation.Views;public partial class GlobalSearchPage:ContentPage{public GlobalSearchPage(GlobalSearchViewModel vm){InitializeComponent();BindingContext=vm;}}

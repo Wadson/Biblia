@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" x:Class="Biblia.Presentation.Components.BtSelectableChip" x:Name="Root">
+ <VisualStateManager.VisualStateGroups><VisualStateGroup x:Name="SelectionStates"><VisualState x:Name="Normal"><VisualState.Setters><Setter TargetName="ChipBorder" Property="Border.BackgroundColor" Value="{StaticResource BtSurface}"/><Setter TargetName="ChipBorder" Property="Border.Stroke" Value="{StaticResource BtBorder}"/><Setter TargetName="ChipLabel" Property="Label.TextColor" Value="{StaticResource BtTextPrimary}"/></VisualState.Setters></VisualState><VisualState x:Name="Selected"><VisualState.Setters><Setter TargetName="ChipBorder" Property="Border.BackgroundColor" Value="{StaticResource BtSelectedBackground}"/><Setter TargetName="ChipBorder" Property="Border.Stroke" Value="{StaticResource BtSelectedBorder}"/><Setter TargetName="ChipLabel" Property="Label.TextColor" Value="{StaticResource BtPrimary}"/><Setter TargetName="ChipLabel" Property="Label.FontAttributes" Value="Bold"/></VisualState.Setters></VisualState></VisualStateGroup></VisualStateManager.VisualStateGroups>
+ <Grid>
+  <Border x:Name="ChipBorder" Style="{StaticResource BtChipStyle}" MinimumWidthRequest="{Binding MinimumChipWidth,Source={x:Reference Root}}"><Label x:Name="ChipLabel" Text="{Binding Text,Source={x:Reference Root}}" HorizontalTextAlignment="Center" MaxLines="1"/></Border>
+ </Grid>
+</ContentView>

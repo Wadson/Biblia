@@ -1,0 +1,1 @@
+using Biblia.Presentation.ViewModels; namespace Biblia.Presentation.Views; public partial class SettingsPage:ContentPage{public SettingsPage(SettingsViewModel vm){InitializeComponent();BindingContext=vm;Loaded+=(_,_)=>vm.LoadCommand.Execute(null);}}

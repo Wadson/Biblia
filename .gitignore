@@ -1,0 +1,11 @@
+# Ignorar arquivos temporários do Visual Studio
+.vs/
+bin/
+obj/
+Debug/
+Release/
+
+# Outros arquivos que não precisam ir para o GitHub
+*.user
+*.suo
+*.log

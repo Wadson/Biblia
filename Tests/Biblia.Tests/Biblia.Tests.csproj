@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.10" />
+    <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="3.0.5" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.0" />
+    <PackageReference Include="xunit.v3" Version="3.2.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\..\Domain\**\*.cs" LinkBase="Domain" />
+    <Compile Include="..\..\Application\Interfaces\*.cs" LinkBase="Application\Interfaces" />
+    <Compile Include="..\..\Application\Interfaces\Repositories\**\*.cs" LinkBase="Application\Interfaces\Repositories" />
+    <Compile Include="..\..\Application\Services\**\*.cs" LinkBase="Application\Services" />
+    <Compile Include="..\..\Infrastructure\AppDatabase\**\*.cs" LinkBase="Infrastructure\AppDatabase" />
+    <Compile Include="..\..\Infrastructure\Repositories\**\*.cs" LinkBase="Infrastructure\Repositories" />
+    <Compile Include="..\..\Infrastructure\BibleDatabases\BibleValidationService.cs" Link="Infrastructure\BibleDatabases\BibleValidationService.cs" />
+    <Compile Include="..\..\Infrastructure\BibleDatabases\BibleRepository.cs" Link="Infrastructure\BibleDatabases\BibleRepository.cs" />
+    <Compile Include="..\..\Presentation\Commands\AsyncCommand.cs" Link="Presentation\Commands\AsyncCommand.cs" />
+    <Compile Include="..\..\Presentation\Models\ThemeColorOption.cs" Link="Presentation\Models\ThemeColorOption.cs" />
+    <Compile Include="..\..\Presentation\ViewModels\BibleReaderViewModel.cs" Link="Presentation\ViewModels\BibleReaderViewModel.cs" />
+    <Compile Include="..\..\Presentation\ViewModels\BibleVerseItemViewModel.cs" Link="Presentation\ViewModels\BibleVerseItemViewModel.cs" />
+    <Compile Include="..\..\Presentation\ViewModels\BibleVersionSelection.cs" Link="Presentation\ViewModels\BibleVersionSelection.cs" />
+    <Compile Include="..\..\Presentation\ViewModels\BibleComparisonViewModel.cs" Link="Presentation\ViewModels\BibleComparisonViewModel.cs" />
+    <Compile Include="..\..\Presentation\ViewModels\MessageReferencesViewModel.cs" Link="Presentation\ViewModels\MessageReferencesViewModel.cs" />
+    <Compile Include="..\..\Presentation\ViewModels\MessagesViewModel.cs" Link="Presentation\ViewModels\MessagesViewModel.cs" />
+    <Compile Include="..\..\Presentation\ViewModels\ThemesViewModel.cs" Link="Presentation\ViewModels\ThemesViewModel.cs" />
+  </ItemGroup>
+</Project>

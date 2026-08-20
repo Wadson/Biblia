@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Biblia.Presentation.Components.ThemeColorPickerView"
+             x:Name="Root">
+    <CollectionView HeightRequest="196" ItemsSource="{Binding Source={x:Reference Root}, Path=ColorOptions}"
+                    SelectedItem="{Binding Source={x:Reference Root}, Path=SelectedColor, Mode=TwoWay}" SelectionMode="Single">
+        <CollectionView.ItemsLayout><GridItemsLayout Orientation="Vertical" Span="6" HorizontalItemSpacing="8" VerticalItemSpacing="8"/></CollectionView.ItemsLayout>
+        <CollectionView.ItemTemplate><DataTemplate>
+            <Grid WidthRequest="52" HeightRequest="52" BackgroundColor="Transparent">
+                <VisualStateManager.VisualStateGroups><VisualStateGroupList><VisualStateGroup x:Name="SelectionStates"><VisualState x:Name="Normal"><VisualState.Setters><Setter Property="BackgroundColor" Value="Transparent"/><Setter TargetName="ColorCircle" Property="Border.StrokeThickness" Value="2"/><Setter TargetName="ColorCircle" Property="Border.Stroke" Value="{StaticResource BtSurface}"/><Setter TargetName="ColorCircle" Property="Border.Scale" Value="0.88"/></VisualState.Setters></VisualState><VisualState x:Name="Selected"><VisualState.Setters><Setter Property="BackgroundColor" Value="Transparent"/><Setter TargetName="ColorCircle" Property="Border.StrokeThickness" Value="4"/><Setter TargetName="ColorCircle" Property="Border.Stroke" Value="{StaticResource BtPrimary}"/><Setter TargetName="ColorCircle" Property="Border.Scale" Value="1"/></VisualState.Setters></VisualState></VisualStateGroup></VisualStateGroupList></VisualStateManager.VisualStateGroups>
+                <Border x:Name="ColorCircle" WidthRequest="44" HeightRequest="44" Padding="0" BackgroundColor="{Binding Hex}" SemanticProperties.Description="{Binding Name}" HorizontalOptions="Center" VerticalOptions="Center" StrokeShape="RoundRectangle 22"/>
+            </Grid>
+        </DataTemplate></CollectionView.ItemTemplate>
+    </CollectionView>
+</ContentView>

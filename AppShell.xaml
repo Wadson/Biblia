@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Shell xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" x:Class="Biblia.AppShell" FlyoutBackgroundColor="#F4F6F9" FlyoutWidth="310" FlyoutBehavior="Flyout">
+ <Shell.Resources>
+  <!-- Recursos locais evitam falha de resolução precoce no Android. -->
+  <Color x:Key="SelectedBackground">#E4EDF7</Color><Color x:Key="SelectedBorder">#B8D4F0</Color><Color x:Key="MenuSurface">#FFFFFF</Color><Color x:Key="MenuBorder">#E0E0E0</Color><Color x:Key="MenuPrimary">#0066CC</Color><Color x:Key="MenuText">#0A0A0A</Color><Color x:Key="MenuDisabled">#A3AAB2</Color>
+  <DataTemplate x:Key="ModernFlyoutItemTemplate">
+   <Border x:Name="ItemBorder" BackgroundColor="{StaticResource MenuSurface}" Stroke="{StaticResource MenuBorder}" StrokeThickness="1" StrokeShape="RoundRectangle 12" Margin="10,4" Padding="12,9">
+    <Grid ColumnDefinitions="36,*" HeightRequest="38">
+     <Image Source="{Binding FlyoutIcon}" HeightRequest="20" WidthRequest="20" HorizontalOptions="Center" VerticalOptions="Center"/>
+     <Label x:Name="ItemTitle" Grid.Column="1" Text="{Binding Title}" TextColor="{StaticResource MenuText}" FontSize="14" VerticalTextAlignment="Center" Margin="8,0,0,0"/>
+    </Grid>
+    <VisualStateManager.VisualStateGroups><VisualStateGroupList><VisualStateGroup x:Name="CommonStates"><VisualState x:Name="Normal"><VisualState.Setters><Setter TargetName="ItemBorder" Property="BackgroundColor" Value="{StaticResource MenuSurface}"/><Setter TargetName="ItemBorder" Property="Stroke" Value="{StaticResource MenuBorder}"/><Setter TargetName="ItemTitle" Property="Label.TextColor" Value="{StaticResource MenuText}"/><Setter TargetName="ItemTitle" Property="Label.FontAttributes" Value="None"/></VisualState.Setters></VisualState><VisualState x:Name="Selected"><VisualState.Setters><Setter TargetName="ItemBorder" Property="BackgroundColor" Value="{StaticResource SelectedBackground}"/><Setter TargetName="ItemBorder" Property="Stroke" Value="{StaticResource SelectedBorder}"/><Setter TargetName="ItemTitle" Property="Label.TextColor" Value="{StaticResource MenuPrimary}"/><Setter TargetName="ItemTitle" Property="Label.FontAttributes" Value="Bold"/></VisualState.Setters></VisualState><VisualState x:Name="Pressed"><VisualState.Setters><Setter TargetName="ItemBorder" Property="BackgroundColor" Value="{StaticResource SelectedBackground}"/><Setter TargetName="ItemBorder" Property="Stroke" Value="{StaticResource SelectedBorder}"/></VisualState.Setters></VisualState><VisualState x:Name="Disabled"><VisualState.Setters><Setter TargetName="ItemBorder" Property="Opacity" Value="0.7"/><Setter TargetName="ItemTitle" Property="Label.TextColor" Value="{StaticResource MenuDisabled}"/></VisualState.Setters></VisualState></VisualStateGroup></VisualStateGroupList></VisualStateManager.VisualStateGroups>
+   </Border>
+  </DataTemplate>
+ </Shell.Resources>
+ <Shell.ItemTemplate><StaticResourceExtension Key="ModernFlyoutItemTemplate"/></Shell.ItemTemplate>
+ <Shell.FlyoutHeader>
+  <Grid HeightRequest="184" Padding="22,24" BackgroundColor="#0D1E30">
+   <VerticalStackLayout VerticalOptions="End" Spacing="6">
+    <Image Source="bt_logo.svg" WidthRequest="48" HeightRequest="48" HorizontalOptions="Start"/>
+    <HorizontalStackLayout Spacing="5"><Label Text="Bíblia" TextColor="White" FontSize="22" FontAttributes="Bold"/><Label Text="Tema" TextColor="#D4AF37" FontSize="22" FontAttributes="Bold"/></HorizontalStackLayout>
+    <Label Text="PREMIUM EDITION" TextColor="#F3E5AB" FontSize="11" FontAttributes="Bold" CharacterSpacing="2"/>
+   </VerticalStackLayout>
+  </Grid>
+ </Shell.FlyoutHeader>
+</Shell>

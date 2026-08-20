@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" x:Class="Biblia.Presentation.Components.AppSelectionSheet" x:Name="Root" IsVisible="{Binding IsOpen, Source={x:Reference Root}}" ZIndex="1000">
+ <Grid BackgroundColor="{StaticResource BtOverlay}" Padding="16">
+  <Border Style="{StaticResource BtCardStyle}" StrokeShape="RoundRectangle 20" Padding="20" VerticalOptions="End" MaximumHeightRequest="640">
+   <Grid RowDefinitions="Auto,Auto,*,Auto" RowSpacing="14">
+    <Label Text="{Binding Title, Source={x:Reference Root}}" Style="{StaticResource BtSectionTitleStyle}" />
+    <Border Grid.Row="1" Style="{StaticResource BtSearchContainerStyle}" IsVisible="{Binding IsSearchVisible, Source={x:Reference Root}}">
+     <Entry Placeholder="{Binding SearchPlaceholder, Source={x:Reference Root}}" Text="{Binding SearchText, Source={x:Reference Root}, Mode=TwoWay}" TextChanged="OnSearchTextChanged" />
+    </Border>
+    <CollectionView Grid.Row="2" ItemsSource="{Binding ItemsSource, Source={x:Reference Root}}" SelectionMode="None">
+     <CollectionView.ItemTemplate><DataTemplate>
+      <Border Margin="0,4" Padding="14,12" StrokeShape="RoundRectangle 12">
+       <Border.Triggers><DataTrigger TargetType="Border" Binding="{Binding IsSelected}" Value="True"><Setter Property="BackgroundColor" Value="{StaticResource BtSelectedBackground}"/><Setter Property="Stroke" Value="{StaticResource BtSelectedBorder}"/></DataTrigger></Border.Triggers>
+       <Border.GestureRecognizers><TapGestureRecognizer Command="{Binding Source={x:Reference Root}, Path=ItemTappedCommand}" CommandParameter="{Binding .}"/></Border.GestureRecognizers>
+       <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10"><BoxView Color="{Binding ColorHex}" WidthRequest="12" HeightRequest="12" CornerRadius="6" VerticalOptions="Center"/><Label Grid.Column="1" Text="{Binding DisplayText}" VerticalOptions="Center"><Label.Triggers><DataTrigger TargetType="Label" Binding="{Binding IsSelected}" Value="True"><Setter Property="TextColor" Value="{StaticResource BtPrimary}"/><Setter Property="FontAttributes" Value="Bold"/></DataTrigger></Label.Triggers></Label></Grid>
+      </Border>
+     </DataTemplate></CollectionView.ItemTemplate>
+     <CollectionView.EmptyView><Label Text="Nenhum item encontrado." Style="{StaticResource BtSubtitleStyle}" Margin="8,20"/></CollectionView.EmptyView>
+    </CollectionView>
+    <Button Grid.Row="3" Text="Cancelar" Style="{StaticResource BtSecondaryButtonStyle}" Command="{Binding CloseCommand, Source={x:Reference Root}}"/>
+   </Grid>
+  </Border>
+ </Grid>
+</ContentView>

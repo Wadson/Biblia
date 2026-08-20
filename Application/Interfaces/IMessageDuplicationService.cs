@@ -1,0 +1,1 @@
+using Biblia.Domain.Entities;namespace Biblia.Application.Interfaces;public interface IMessageDuplicationService{Task<Message> DuplicateAsync(long messageId,string? title=null,CancellationToken cancellationToken=default);}
