@@ -15,4 +15,7 @@ public sealed record MessageReportTopic(MessageTopic Topic, IReadOnlyList<Messag
 public sealed record MessageReportReference(
     MessageReference Link,
     SavedReferenceDetails SavedReference,
-    BiblePassage? Passage);
+    BiblePassage? Passage,
+    string BookName,
+    string FormattedReference,
+    BibleVersionCatalogEntry? BibleVersion);

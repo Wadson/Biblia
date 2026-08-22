@@ -51,3 +51,27 @@ Espaçamentos: `BtSpacingXs` 4, `BtSpacingSm` 8, `BtSpacingMd` 12, `BtSpacingLg`
 
 O card principal usa superfície, borda e sombra do design system, badge `BtGoldSoft`, referência `BtPrimary` e texto bíblico sem truncamento. No mobile, atalhos são exibidos em duas colunas; em largura ampla, Versículo do Dia e Acesso rápido ocupam colunas distintas.
 
+# Configurações
+
+Versões, backup e Sobre usam cards premium; versão ativa usa `BtSelectedBackground/BtSelectedBorder/BtPrimary`. Confirmação de restauração e Sobre são overlays customizados, enquanto seleção e compartilhamento de arquivos usam a UI segura do sistema.
+# Navegação e saída
+
+- Cabeçalhos ROOT: a Home mantém apenas título e menu do Flyout. As demais entradas do Flyout usam o `PageHeaderView`; quando não existe página anterior na pilha, `← Voltar` retorna para `//Home`.
+- Cabeçalhos SECONDARY: toda página deve usar o `PageHeaderView` padronizado, sobre `BtHeader`, com título truncável e a ação textual `← Voltar` no lado direito. A área de toque é de no mínimo 44dp, o texto usa `BtGoldSoft`, e os estados hover/pressionado usam variações discretas do cabeçalho.
+- O Back visual chama `IAppNavigator.GoBackAsync()` e retorna pela pilha real do Shell (`..`), sem recriar a tela anterior. O Back nativo fica oculto apenas visualmente, mantendo o gesto/botão Android coerente.
+- Novas páginas secundárias não podem criar toolbar, seta ou implementação própria de retorno; devem reutilizar `PageHeaderView`.
+- Sair: card normal do Flyout (`Surface`, `Border`, texto primário e ícone `Primary`).
+- Confirmação de saída: popup customizado responsivo, superfície branca, overlay `Header`, “Cancelar” secundário e “Sim” primário.
+# Leitor bíblico
+
+- Prioridade visual: texto bíblico, referência, navegação e ferramentas.
+- Barra compacta de 56dp sobre `Surface`; livro flexível, capítulo e versão compactos.
+- Coluna de leitura centralizada com largura máxima de 900dp e margens móveis de 22dp.
+- Versículos não usam cards ou sombras; seleção utiliza fundo `Selected Background`, borda `Selected Border` e número `Primary`.
+- Gold é reservado ao pequeno divisor do título do capítulo.
+# Relatórios e PDF
+
+- Configuração usa cards `Surface/Border`; escolhas ativas usam `Selected Background`, `Selected Border` e `Primary`.
+- A prévia editorial limita a cor de cada tema a bolinha, linha ou faixa lateral.
+- O PDF usa `Header` no cabeçalho, `Gold` como detalhe editorial, `Primary` nas referências e `Surface/Border` nos comentários.
+- O modal de exportação usa o overlay e os botões do design system; o seletor de destino e o compartilhamento permanecem nativos por segurança.

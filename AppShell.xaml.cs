@@ -1,15 +1,40 @@
 using Biblia.Presentation.Views;
 using Microsoft.Extensions.DependencyInjection;
+using Biblia.Application.Interfaces;
+using CommunityToolkit.Maui;
+using CommunityToolkit.Maui.Extensions;
+using Microsoft.Maui.Controls.Shapes;
 
 namespace Biblia;
 
 public partial class AppShell : Shell
 {
+    private readonly IApplicationExitService _exitService;
+
     public AppShell(IServiceProvider services)
     {
         InitializeComponent();
+        _exitService = services.GetRequiredService<IApplicationExitService>();
+        ExitFlyoutButton.IsVisible = _exitService.CanExit;
         BuildNavigation(services);
         RegisterRoutes();
+    }
+
+    private async void OnExitTapped(object? sender, TappedEventArgs e)
+    {
+        if (!_exitService.CanExit || CurrentPage is not Page host)
+            return;
+        FlyoutIsPresented = false;
+        await Task.Delay(120);
+        var options = new PopupOptions
+        {
+            CanBeDismissedByTappingOutsideOfPopup = true,
+            PageOverlayColor = Color.FromArgb("990D1E30"),
+            Shape = new RoundRectangle { CornerRadius = 18, Stroke = Colors.Transparent, StrokeThickness = 0 }
+        };
+        var result = await host.ShowPopupAsync<bool>(new ExitConfirmationView(host), options);
+        if (result.Result is true)
+            await _exitService.ExitAsync();
     }
 
     private void BuildNavigation(IServiceProvider services)
@@ -27,11 +52,9 @@ public partial class AppShell : Shell
         Items.Add(CreateFlyoutItem<SavedReferencesPage>(services, "Referências guardadas", "SavedReferences", "icon_bookmark.png"));
 
         // ── MENSAGENS E PREGAÇÕES ──
-        Items.Add(CreateSection("MENSAGENS E PREGAÇÕES"));
         Items.Add(CreateFlyoutItem<MessageBibleReferencesPage>(services, "Mensagens e Pregações", "MessageBibleReferences", "icon_preach.png"));
 
         // ── SISTEMA E CONFIGURAÇÕES ──
-        Items.Add(CreateSection("SISTEMA"));
         Items.Add(CreateFlyoutItem<GlobalSearchPage>(services, "Pesquisa global", "GlobalSearch", "icon_glob_search.png"));
         Items.Add(CreateFlyoutItem<ReportsPage>(services, "Relatórios", "Reports", "icon_reports.png"));
         Items.Add(CreateFlyoutItem<SettingsPage>(services, "Configurações", "Settings", "icon_settings.png"));
@@ -77,5 +100,6 @@ public partial class AppShell : Shell
         Routing.RegisterRoute("MessageTopics",typeof(MessageTopicsPage));
         Routing.RegisterRoute("MessageReferences",typeof(MessageReferencesPage));
         Routing.RegisterRoute("MessageDuplication",typeof(MessageDuplicationPage));
+        Routing.RegisterRoute("VerseCardStudio",typeof(VerseCardStudioPage));
     }
 }

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" x:Class="Biblia.Presentation.Views.ExitConfirmationView" WidthRequest="340" MaximumWidthRequest="520">
+ <Border BackgroundColor="{StaticResource BtSurface}" Stroke="{StaticResource BtBorder}" StrokeThickness="1" StrokeShape="RoundRectangle 18" Padding="22"><VerticalStackLayout Spacing="16">
+  <Label Text="Sair do BíbliaTema" HorizontalTextAlignment="Center" Style="{StaticResource BtSectionTitleStyle}" TextColor="{StaticResource BtHeader}" SemanticProperties.HeadingLevel="Level1"/>
+  <Label Text="Deseja sair do app Bíblia?" HorizontalTextAlignment="Center" TextColor="{StaticResource BtTextPrimary}"/>
+  <Grid ColumnDefinitions="*,*" ColumnSpacing="10"><Button x:Name="CancelButton" Text="Cancelar" Style="{StaticResource BtSecondaryButtonStyle}" Clicked="OnCancelClicked" SemanticProperties.Hint="Cancelar saída"/><Button Grid.Column="1" Text="Sim" Style="{StaticResource BtPrimaryButtonStyle}" Clicked="OnConfirmClicked" SemanticProperties.Hint="Confirmar saída do aplicativo"/></Grid>
+ </VerticalStackLayout></Border>
+</ContentView>

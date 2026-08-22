@@ -4,7 +4,9 @@ using Biblia.Infrastructure.Time;
 using Biblia.Application.Interfaces.Repositories;
 using Biblia.Infrastructure.Repositories;
 using Biblia.Infrastructure.BibleDatabases;
+using Biblia.Infrastructure.Platform;
 using Microsoft.Extensions.DependencyInjection;
+using Biblia.Infrastructure.Media;
 
 namespace Biblia.Infrastructure;
 
@@ -30,6 +32,12 @@ public static class DependencyInjection
         services.AddSingleton<IClipboardService, MauiClipboardService>();
         services.AddSingleton<IPdfService, PdfService>();
         services.AddSingleton<IBackupService, BackupService>();
+        services.AddSingleton<IFileTransferService,MauiFileTransferService>();
+        services.AddSingleton<IAppInfoService,MauiAppInfoService>();
+        services.AddSingleton<IApplicationExitService,MauiApplicationExitService>();
+        services.AddHttpClient("NatureMedia", client => client.Timeout = TimeSpan.FromSeconds(20));
+        services.AddSingleton<INatureMediaService,PexelsNatureMediaService>();
+        services.AddSingleton<IVerseCardService,SkiaVerseCardService>();
         return services;
     }
 }

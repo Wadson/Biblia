@@ -28,6 +28,7 @@ public sealed class MessageTopicsViewModel : INotifyPropertyChanged
         UpCommand = new(() => MoveAsync(-1), CanMoveUp);
         DownCommand = new(() => MoveAsync(1), CanMoveDown);
         SelectMessageCommand = new(OpenMessagesAsync, () => !IsBusy);
+        BackCommand = new(() => _navigator?.GoBackAsync() ?? Task.CompletedTask, () => !IsBusy);
     }
 
     public ObservableCollection<Message> Messages { get; } = [];
@@ -70,6 +71,7 @@ public sealed class MessageTopicsViewModel : INotifyPropertyChanged
     public AsyncCommand UpCommand { get; }
     public AsyncCommand DownCommand { get; }
     public AsyncCommand SelectMessageCommand { get; }
+    public AsyncCommand BackCommand { get; }
     public event PropertyChangedEventHandler? PropertyChanged;
 
     private async Task LoadAsync() => await RunAsync(async () =>
@@ -126,7 +128,7 @@ public sealed class MessageTopicsViewModel : INotifyPropertyChanged
     private bool CanMoveUp() => SelectedTopic is not null && Topics.IndexOf(SelectedTopic) > 0 && !IsBusy;
     private bool CanMoveDown() => SelectedTopic is not null && Topics.IndexOf(SelectedTopic) >= 0 && Topics.IndexOf(SelectedTopic) < Topics.Count - 1 && !IsBusy;
     private async Task RunAsync(Func<Task> action) { if (IsBusy) return; IsBusy = true; try { await action(); } catch (Exception exception) { Status = exception.Message; } finally { IsBusy = false; } }
-    private void NotifyCommands() { LoadCommand.NotifyCanExecuteChanged(); NewCommand.NotifyCanExecuteChanged(); SaveCommand.NotifyCanExecuteChanged(); DeleteCommand.NotifyCanExecuteChanged(); UpCommand.NotifyCanExecuteChanged(); DownCommand.NotifyCanExecuteChanged(); SelectMessageCommand.NotifyCanExecuteChanged(); }
+    private void NotifyCommands() { LoadCommand.NotifyCanExecuteChanged(); NewCommand.NotifyCanExecuteChanged(); SaveCommand.NotifyCanExecuteChanged(); DeleteCommand.NotifyCanExecuteChanged(); UpCommand.NotifyCanExecuteChanged(); DownCommand.NotifyCanExecuteChanged(); SelectMessageCommand.NotifyCanExecuteChanged(); BackCommand.NotifyCanExecuteChanged(); }
     private bool Set<T>(ref T field, T value, [CallerMemberName] string? name = null) { if (EqualityComparer<T>.Default.Equals(field, value)) return false; field = value; On(name); return true; }
     private void On(string? name) => PropertyChanged?.Invoke(this, new(name));
 }

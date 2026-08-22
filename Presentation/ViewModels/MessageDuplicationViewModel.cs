@@ -15,7 +15,7 @@ public sealed class MessageDuplicationViewModel : INotifyPropertyChanged
     private Message? _selected;
     private string _title = string.Empty, _status = string.Empty;
     private bool _busy;
-    public MessageDuplicationViewModel(IMessageRepository messages, IMessageDuplicationService duplication) { _messages = messages; _duplication = duplication; LoadCommand = new AsyncCommand(LoadAsync, () => !IsBusy); DuplicateCommand = new AsyncCommand(DuplicateAsync, () => SelectedMessage is not null && !IsBusy); }
+    public MessageDuplicationViewModel(IMessageRepository messages, IMessageDuplicationService duplication,IAppNavigator navigator) { _messages = messages; _duplication = duplication; LoadCommand = new AsyncCommand(LoadAsync, () => !IsBusy); DuplicateCommand = new AsyncCommand(DuplicateAsync, () => SelectedMessage is not null && !IsBusy);BackCommand=new AsyncCommand(()=>navigator.GoBackAsync(),()=>!IsBusy); }
     public ObservableCollection<Message> Messages { get; } = [];
     public Message? SelectedMessage { get => _selected; set => Set(ref _selected, value); }
     public string Title { get => _title; set => Set(ref _title, value); }
@@ -23,6 +23,7 @@ public sealed class MessageDuplicationViewModel : INotifyPropertyChanged
     public bool IsBusy { get => _busy; private set { if (Set(ref _busy, value)) { LoadCommand.NotifyCanExecuteChanged(); DuplicateCommand.NotifyCanExecuteChanged(); } } }
     public AsyncCommand LoadCommand { get; }
     public AsyncCommand DuplicateCommand { get; }
+    public AsyncCommand BackCommand { get; }
     public event PropertyChangedEventHandler? PropertyChanged;
     private async Task LoadAsync() { if (IsBusy) return; IsBusy = true; try { Messages.Clear(); foreach (var message in await _messages.GetAllAsync()) Messages.Add(message); SelectedMessage = Messages.FirstOrDefault(); } catch (Exception ex) { Status = ex.Message; } finally { IsBusy = false; } }
     private async Task DuplicateAsync() { if (SelectedMessage is null) return; IsBusy = true; try { var copy = await _duplication.DuplicateAsync(SelectedMessage.Id, Title); Messages.Insert(0, copy); SelectedMessage = copy; Title = string.Empty; Status = "Mensagem duplicada com tópicos, referências e observações."; } catch (Exception ex) { Status = ex.Message; } finally { IsBusy = false; } }

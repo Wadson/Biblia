@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:components="clr-namespace:Biblia.Presentation.Components" x:Class="Biblia.Presentation.Views.MessagesPage" Title="Mensagens" Style="{StaticResource BtPageStyle}" Shell.BackgroundColor="{StaticResource BtHeader}" Shell.TitleColor="White">
+ <Shell.BackButtonBehavior><BackButtonBehavior IsVisible="False" IsEnabled="True"/></Shell.BackButtonBehavior>
+ <Shell.TitleView><components:PageHeaderView Title="Mensagens"/></Shell.TitleView>
  <Grid>
   <ScrollView><VerticalStackLayout Padding="16" Spacing="16" MaximumWidthRequest="1160" HorizontalOptions="Center">
    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12"><VerticalStackLayout><Label Text="Mensagens" Style="{StaticResource BtPageTitleStyle}"/><Label Text="Planeje mensagens, estudos e pregações em um só lugar." Style="{StaticResource BtSubtitleStyle}"/></VerticalStackLayout><Button Grid.Column="1" Text="＋ Nova mensagem" Style="{StaticResource BtSecondaryButtonStyle}" Command="{Binding NewCommand}"/></Grid>

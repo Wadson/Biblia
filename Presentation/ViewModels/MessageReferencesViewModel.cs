@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Biblia.Application.Interfaces;
 using Biblia.Domain.Entities;
+using Biblia.Domain.Enums;
 using Biblia.Presentation.Commands;
 
 namespace Biblia.Presentation.ViewModels;
@@ -57,6 +58,7 @@ public sealed class MessageReferencesViewModel : INotifyPropertyChanged
     private readonly IBibleVersionManager _versionsService;
     private readonly IBibleRepository _bible;
     private readonly IAppNavigator? _navigator;
+    private readonly IMessageDuplicationService? _duplication;
     private Message? _message;
     private MessageTopic? _topic;
     private MessageReferenceItem? _editingItem;
@@ -71,9 +73,9 @@ public sealed class MessageReferencesViewModel : INotifyPropertyChanged
     private readonly List<MessageReferenceItem> _allItems = [];
     private long? _requestedMessageId;
 
-    public MessageReferencesViewModel(IMessageService messagesService, IMessageTopicService topicsService, IMessageReferenceService references, ISavedReferenceService saved, IThemeService themesService, IBibleVersionManager versionsService, IBibleRepository bible, IAppNavigator? navigator = null)
+    public MessageReferencesViewModel(IMessageService messagesService, IMessageTopicService topicsService, IMessageReferenceService references, ISavedReferenceService saved, IThemeService themesService, IBibleVersionManager versionsService, IBibleRepository bible, IAppNavigator? navigator = null,IMessageDuplicationService? duplication=null)
     {
-        _messagesService = messagesService; _topicsService = topicsService; _references = references; _saved = saved; _themesService = themesService; _versionsService = versionsService; _bible = bible; _navigator = navigator;
+        _messagesService = messagesService; _topicsService = topicsService; _references = references; _saved = saved; _themesService = themesService; _versionsService = versionsService; _bible = bible; _navigator = navigator;_duplication=duplication;
         LoadCommand = new(LoadAsync, () => !IsBusy);
         AddCommand = new(AddAsync, CanAdd);
         SaveCommand = new(SaveAsync, () => EditingItem is not null && SelectedTheme is not null && !IsBusy);
@@ -91,6 +93,10 @@ public sealed class MessageReferencesViewModel : INotifyPropertyChanged
         MoveDownCommand=new AsyncCommand<MessageReferenceItem>(item=>MoveAsync(item,1),_=>!IsBusy);
         CancelEditCommand = new(CancelEditAsync, () => EditingItem is not null && !IsBusy);
         SelectMessageCommand = new(OpenMessagesAsync, () => !IsBusy);
+        CreateThemeCommand=new(()=>_navigator?.GoToAsync("//Themes")??Task.CompletedTask);
+        DuplicateMessageCommand=new(DuplicateMessageAsync,()=>SelectedMessage is not null&&!IsBusy&&_duplication is not null);
+        OpenReportsCommand=new(()=>_navigator?.GoToAsync("//Reports")??Task.CompletedTask);
+        BackCommand=new(()=>_navigator?.GoBackAsync()??Task.CompletedTask,()=>!IsBusy);
     }
 
     public ObservableCollection<Message> Messages { get; } = [];
@@ -108,6 +114,7 @@ public sealed class MessageReferencesViewModel : INotifyPropertyChanged
     public string MessageTitle => SelectedMessage?.Title ?? "Nenhuma mensagem selecionada";
     public string MessageType => SelectedMessage?.Type.ToString() ?? "Selecione uma mensagem para continuar.";
     public bool HasMessage => SelectedMessage is not null;
+    public bool HasThemes=>ThemeOptions.Count>0;
     public bool HasTopics => Topics.Count > 0;
     public MessageTopic? SelectedTopic { get => _topic; private set { if (Set(ref _topic, value)) { RefreshTopicSelection(); On(nameof(SelectedTopicText)); NotifyCommands(); } } }
     public string SelectedTopicText => SelectedTopic?.Title ?? (HasTopics ? "Selecionar tópico (opcional)" : "Nenhum tópico criado.");
@@ -132,7 +139,6 @@ public sealed class MessageReferencesViewModel : INotifyPropertyChanged
         get
         {
             var missing = new List<string>();
-            if (SelectedMessage is null || SelectedMessage.Id <= 0) missing.Add("mensagem");
             if (SelectedVersion is null) missing.Add("versão");
             if (SelectedBook is null) missing.Add("livro");
             if (SelectedChapter <= 0) missing.Add("capítulo");
@@ -163,6 +169,10 @@ public sealed class MessageReferencesViewModel : INotifyPropertyChanged
     public AsyncCommand<MessageReferenceItem> MoveDownCommand{get;}
     public AsyncCommand CancelEditCommand { get; }
     public AsyncCommand SelectMessageCommand { get; }
+    public AsyncCommand CreateThemeCommand{get;}
+    public AsyncCommand DuplicateMessageCommand{get;}
+    public AsyncCommand OpenReportsCommand{get;}
+    public AsyncCommand BackCommand{get;}
     public event PropertyChangedEventHandler? PropertyChanged;
 
     private async Task LoadAsync() => await RunAsync(async () =>
@@ -176,7 +186,7 @@ public sealed class MessageReferencesViewModel : INotifyPropertyChanged
         var active = await _versionsService.GetActiveVersionAsync();
         SelectedMessage = Messages.FirstOrDefault(x => x.Id == RequestedMessageId) ?? Messages.FirstOrDefault();
         SelectedVersion = Versions.FirstOrDefault(x => x.Id == SelectedMessage?.PreferredBibleVersionId) ?? Versions.FirstOrDefault(x => x.Id == active?.Id) ?? Versions.FirstOrDefault();
-        Status = Messages.Count == 0 ? "Crie e salve uma mensagem antes de vincular referências." : "Selecione o texto bíblico e um tema.";
+        Status = Messages.Count == 0 ? "Selecione o tema e o trecho; a pregação será criada automaticamente ao adicionar." : "Selecione o texto bíblico e um tema.";
     });
 
     private async Task LoadBooksAsync()
@@ -280,17 +290,24 @@ public sealed class MessageReferencesViewModel : INotifyPropertyChanged
         var themes = await _themesService.SearchAsync(query, token);
         ThemeOptions.Clear();
         foreach (var theme in themes) ThemeOptions.Add(new(theme));
+        On(nameof(HasThemes));
         if (selectedId is not null) SelectedTheme = ThemeOptions.FirstOrDefault(x => x.Theme.Id == selectedId) ?? SelectedTheme;
         RefreshThemeSelection();
     }
 
     private async Task AddAsync() => await RunAsync(async () =>
     {
+        if(SelectedMessage is null)
+        {
+            var title=$"Pregação — {SelectedTheme!.DisplayText}";
+            var created=await _messagesService.SaveAsync(null,title,$"Referências relacionadas ao tema {SelectedTheme.DisplayText}.",Biblia.Domain.Enums.MessageType.Sermon,preferredBibleVersionId:SelectedVersion?.Id);
+            Messages.Add(created);SelectedMessage=created;
+        }
         var existing = await _saved.FindCanonicalAsync(SelectedBook!.BookReferenceId, SelectedChapter, _selectionStart!.Value, _selectionEnd!.Value);
         var themeIds = (existing?.Themes.Select(x => x.Id) ?? []).Append(SelectedTheme!.Theme.Id).Distinct().ToArray();
         var comment = string.IsNullOrWhiteSpace(Comment) ? existing?.Reference.Comment : Comment;
         var saved = await _saved.SaveAsync(existing?.Reference.Id, SelectedBook.BookReferenceId, SelectedChapter, _selectionStart.Value, _selectionEnd.Value, comment, SelectedVersion!.Id, themeIds);
-        await _references.AddAsync(SelectedMessage!.Id, saved.Reference.Id, SelectedTopic?.Id, Observation, SelectedVersion.Id);
+        await _references.AddAsync(SelectedMessage!.Id, saved.Reference.Id, null, null, SelectedVersion.Id);
         ResetAfterAdd(); await LoadItemsAsync(); Status = $"Referência adicionada à mensagem e vinculada ao tema {SelectedTheme!.DisplayText}.";
     });
 
@@ -318,6 +335,7 @@ public sealed class MessageReferencesViewModel : INotifyPropertyChanged
 
     private Task CancelEditAsync() { ResetForm(); Status = "Edição cancelada."; return Task.CompletedTask; }
     private Task OpenMessagesAsync() => _navigator?.GoToAsync("Messages") ?? Task.CompletedTask;
+    private async Task DuplicateMessageAsync()=>await RunAsync(async()=>{var copy=await _duplication!.DuplicateAsync(SelectedMessage!.Id);Messages.Add(copy);SelectedMessage=copy;Status="Mensagem duplicada. Edite o título e continue organizando.";});
     private async Task DeleteAsync(MessageReferenceItem item) => await RunAsync(async () =>
     {
         await _references.DeleteAsync(item.Reference.Id);
@@ -325,7 +343,7 @@ public sealed class MessageReferencesViewModel : INotifyPropertyChanged
         await LoadItemsAsync(); Status = "Vínculo removido; a referência salva e seus temas foram preservados.";
     });
 
-    private bool CanAdd() => SelectedMessage is not null && SelectedMessage.Id > 0 && SelectedVersion is not null && SelectedBook is not null && SelectedChapter > 0 && _selectionStart is not null && _selectionEnd is not null && SelectedTheme is not null && !IsBusy;
+    private bool CanAdd() => SelectedVersion is not null && SelectedBook is not null && SelectedChapter > 0 && _selectionStart is not null && _selectionEnd is not null && SelectedTheme is not null && !IsBusy;
     private async Task MoveAsync(MessageReferenceItem item,int direction)=>await RunAsync(async()=>{if(SelectedMessage is null)return;await _references.MoveAsync(SelectedMessage.Id,_allItems.Select(x=>x.Reference).ToArray(),item.Reference.Id,direction);await LoadItemsAsync();Status="Ordem das referências atualizada.";});
     private void ResetAfterAdd() { EditingItem = null; Comment = ""; Observation = ""; SelectedTopic = null; ClearVerseSelection(); }
     private void ResetForm() { EditingItem = null; Comment = ""; Observation = ""; SelectedTopic = null; SelectedTheme = null; ClearVerseSelection(); }
@@ -336,7 +354,7 @@ public sealed class MessageReferencesViewModel : INotifyPropertyChanged
     private void RefreshTopicSelection() { foreach (var item in TopicOptions) item.IsSelected = item.Topic?.Id == SelectedTopic?.Id && (item.Topic is not null || SelectedTopic is null); }
     private async Task RunAsync(Func<Task> action) { if (IsBusy) return; IsBusy = true; try { await action(); } catch (Exception exception) { Status = exception.Message; } finally { IsBusy = false; } }
     private static string? Normalize(string value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
-    private void NotifyCommands() { On(nameof(AddRequirementText)); LoadCommand.NotifyCanExecuteChanged(); AddCommand.NotifyCanExecuteChanged(); SaveCommand.NotifyCanExecuteChanged(); EditCommand.NotifyCanExecuteChanged(); DeleteCommand.NotifyCanExecuteChanged();MoveUpCommand.NotifyCanExecuteChanged();MoveDownCommand.NotifyCanExecuteChanged(); CancelEditCommand.NotifyCanExecuteChanged(); SelectMessageCommand.NotifyCanExecuteChanged(); }
+    private void NotifyCommands() { On(nameof(AddRequirementText)); LoadCommand.NotifyCanExecuteChanged(); AddCommand.NotifyCanExecuteChanged(); SaveCommand.NotifyCanExecuteChanged(); EditCommand.NotifyCanExecuteChanged(); DeleteCommand.NotifyCanExecuteChanged();MoveUpCommand.NotifyCanExecuteChanged();MoveDownCommand.NotifyCanExecuteChanged(); CancelEditCommand.NotifyCanExecuteChanged(); SelectMessageCommand.NotifyCanExecuteChanged();DuplicateMessageCommand.NotifyCanExecuteChanged();BackCommand.NotifyCanExecuteChanged(); }
     private bool Set<T>(ref T field, T value, [CallerMemberName] string? name = null) { if (EqualityComparer<T>.Default.Equals(field, value)) return false; field = value; On(name); return true; }
     private void On(string? name) => PropertyChanged?.Invoke(this, new(name));
 }

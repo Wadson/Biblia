@@ -52,6 +52,8 @@ public static class DependencyInjection
         services.AddTransient<ReportsPage>();
         services.AddTransient<SettingsViewModel>();
         services.AddTransient<SettingsPage>();
+        services.AddTransient<VerseCardStudioViewModel>();
+        services.AddTransient<VerseCardStudioPage>();
 
         return services;
     }

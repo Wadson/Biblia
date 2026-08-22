@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:components="clr-namespace:Biblia.Presentation.Components" x:Class="Biblia.Presentation.Views.MessageTopicsPage" Title="Tópicos" Style="{StaticResource BtPageStyle}" Shell.BackgroundColor="{StaticResource BtHeader}" Shell.TitleColor="White">
+ <Shell.BackButtonBehavior><BackButtonBehavior IsVisible="False" IsEnabled="True"/></Shell.BackButtonBehavior>
+ <Shell.TitleView><components:PageHeaderView Title="Tópicos"/></Shell.TitleView>
  <Grid>
   <ScrollView><VerticalStackLayout Padding="16" Spacing="16" MaximumWidthRequest="1080" HorizontalOptions="Center">
    <Border Style="{StaticResource BtCardStyle}" Padding="14"><Grid ColumnDefinitions="*,Auto" ColumnSpacing="10"><VerticalStackLayout><Label Text="Mensagem" Style="{StaticResource FieldLabel}"/><Label Text="{Binding MessageTitle}" FontSize="18" FontAttributes="Bold"/><Label Text="{Binding MessageType}" Style="{StaticResource BtSubtitleStyle}"/></VerticalStackLayout><Button Grid.Column="1" Text="Selecionar mensagem" Style="{StaticResource BtCompactButtonStyle}" Command="{Binding SelectMessageCommand}"><Button.Triggers><DataTrigger TargetType="Button" Binding="{Binding HasMessage}" Value="True"><Setter Property="IsVisible" Value="False"/></DataTrigger></Button.Triggers></Button></Grid></Border>

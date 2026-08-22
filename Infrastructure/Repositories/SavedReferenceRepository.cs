@@ -70,6 +70,31 @@ public sealed class SavedReferenceRepository : SqliteRepositoryBase, ISavedRefer
         return result;
     }
 
+    public async Task<IReadOnlyList<SavedReferenceDetails>> GetByThemeIdsAsync(IReadOnlyCollection<long> themeIds, CancellationToken cancellationToken = default)
+    {
+        if (themeIds.Count == 0) return [];
+        var ids = themeIds.Distinct().ToArray();
+        var references = new List<SavedReference>();
+        await using (var connection = await Database.OpenConnectionAsync(cancellationToken))
+        await using (var command = connection.CreateCommand())
+        {
+            var parameters = ids.Select((_, index) => $"$theme{index}").ToArray();
+            command.CommandText = $"""
+                SELECT DISTINCT r.Id,r.BookReferenceId,r.Chapter,r.VerseStart,r.VerseEnd,r.Comment,r.PreferredBibleVersionId,r.CreatedAt,r.UpdatedAt
+                FROM SavedReference r
+                INNER JOIN ReferenceTheme rt ON rt.ReferenceId=r.Id
+                WHERE rt.ThemeId IN ({string.Join(',', parameters)})
+                ORDER BY r.BookReferenceId,r.Chapter,r.VerseStart,r.VerseEnd,r.Id;
+                """;
+            for (var index = 0; index < ids.Length; index++) command.Parameters.AddWithValue(parameters[index], ids[index]);
+            await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+            while (await reader.ReadAsync(cancellationToken)) references.Add(Map(reader));
+        }
+        var result = new List<SavedReferenceDetails>(references.Count);
+        foreach (var reference in references) result.Add(new(reference, await GetThemesAsync(reference.Id, cancellationToken)));
+        return result;
+    }
+
     public async Task UpdateAsync(SavedReference item, CancellationToken cancellationToken = default)
     {
         await using var c = await Database.OpenConnectionAsync(cancellationToken); await using var cmd = c.CreateCommand();

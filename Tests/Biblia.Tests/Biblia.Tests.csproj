@@ -16,6 +16,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="SkiaSharp" Version="4.151.1" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\..\Domain\**\*.cs" LinkBase="Domain" />
@@ -35,5 +36,10 @@
     <Compile Include="..\..\Presentation\ViewModels\MessageReferencesViewModel.cs" Link="Presentation\ViewModels\MessageReferencesViewModel.cs" />
     <Compile Include="..\..\Presentation\ViewModels\MessagesViewModel.cs" Link="Presentation\ViewModels\MessagesViewModel.cs" />
     <Compile Include="..\..\Presentation\ViewModels\ThemesViewModel.cs" Link="Presentation\ViewModels\ThemesViewModel.cs" />
+    <Compile Include="..\..\Infrastructure\Media\SkiaVerseCardService.cs" Link="Infrastructure\Media\SkiaVerseCardService.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="..\..\Resources\Fonts\OpenSans-Regular.ttf" LogicalName="Biblia.Fonts.OpenSans-Regular.ttf" />
+    <EmbeddedResource Include="..\..\Resources\Fonts\OpenSans-Semibold.ttf" LogicalName="Biblia.Fonts.OpenSans-Semibold.ttf" />
   </ItemGroup>
 </Project>

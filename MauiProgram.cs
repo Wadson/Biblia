@@ -2,6 +2,7 @@ using Biblia.Application;
 using Biblia.Infrastructure;
 using Biblia.Presentation;
 using Microsoft.Extensions.Logging;
+using CommunityToolkit.Maui;
 
 namespace Biblia;
 
@@ -12,6 +13,10 @@ public static class MauiProgram
         var builder = MauiApp.CreateBuilder();
         builder
             .UseMauiApp<App>()
+            .UseMauiCommunityToolkit()
+#if ANDROID
+            .ConfigureMauiHandlers(handlers => handlers.AddHandler<Presentation.Components.CachedPhotoImage, Platforms.Android.CachedPhotoImageHandler>())
+#endif
             .ConfigureFonts(fonts =>
             {
                 fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");

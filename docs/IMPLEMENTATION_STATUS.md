@@ -158,3 +158,36 @@ Status: Concluída em código.
 - Cinco categorias e fallback canônico: implementado.
 - Texto carregado do banco bíblico ativo: implementado.
 - Navegação para capítulo e atalhos: implementado.
+
+# Configurações
+
+- Lista de versões e destaque da atual: implementado.
+- Backup ZIP, exportação e compartilhamento: implementado.
+- Seleção, validação, confirmação e restauração: implementado.
+- Sobre com versão real: implementado.
+# Navegação global e saída — concluído
+
+- ROOT e SECONDARY auditadas e documentadas.
+- Voltar padronizado nas cinco rotas secundárias usando a pilha Shell existente.
+- Sair adicionado ao rodapé do Flyout, depois de Configurações, sem rota artificial.
+- Confirmação customizada com a mensagem “Deseja sair do app Bíblia?”.
+- `IApplicationExitService`: Android encerra a tarefa da Activity, Windows encerra pelo WinUI, MacCatalyst usa a API do AppKit e iOS oculta a ação.
+- Nenhum uso de `DisplayAlert`, `Environment.Exit` ou encerramento forçado de processo.
+# Gerador de pregações e PDF — concluído em 2026-08-20
+
+- [x] Geração por mensagem cadastrada, um tema ou vários temas.
+- [x] Consulta explícita por `ThemeId`, sem comparação textual.
+- [x] Nome canônico do livro e formatação sem intervalo redundante.
+- [x] Prévia estruturada com texto bíblico, comentário, observação e versão.
+- [x] PDF MigraDoc/PDFsharp com Unicode, layout fluido, identidade Premium, cabeçalho, rodapé e paginação.
+- [x] Arquivo temporário em cache seguido de Salvar em... ou Share Sheet.
+# Estúdio de cards — concluído em 2026-08-20
+
+- [x] Versículo do Dia preservado e usado automaticamente.
+- [x] Escolha alternativa por versão/livro/capítulo/intervalo real.
+- [x] Tema relacionado/manual/sem tema e saudação automática local.
+- [x] Clássico, Editorial e Minimalista; 4:5, Story e quadrado.
+- [x] Pexels oficial por configuração externa, cache, atribuição e tratamento 401/429/timeout.
+- [x] Quatro fundos offline.
+- [x] PNG dedicado via SkiaSharp, Unicode, overlay e branding.
+- [x] Salvar por FileSaver e compartilhar por Share Sheet.

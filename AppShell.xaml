@@ -23,4 +23,10 @@
    </VerticalStackLayout>
   </Grid>
  </Shell.FlyoutHeader>
+ <Shell.FlyoutFooter>
+  <Border x:Name="ExitFlyoutButton" BackgroundColor="{StaticResource MenuSurface}" Stroke="{StaticResource MenuBorder}" StrokeThickness="1" StrokeShape="RoundRectangle 12" Margin="10,4,10,14" Padding="12,9" HeightRequest="58" SemanticProperties.Description="Sair" SemanticProperties.Hint="Sair do aplicativo">
+   <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnExitTapped"/></Border.GestureRecognizers>
+   <Grid ColumnDefinitions="36,*"><Image Source="icon_exit.svg" HeightRequest="20" WidthRequest="20" HorizontalOptions="Center" VerticalOptions="Center"/><Label Grid.Column="1" Text="Sair" TextColor="{StaticResource MenuText}" FontSize="14" VerticalTextAlignment="Center" Margin="8,0,0,0"/></Grid>
+  </Border>
+ </Shell.FlyoutFooter>
 </Shell>

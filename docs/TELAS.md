@@ -52,3 +52,38 @@
 # Home — Versículo do Dia
 
 A Home apresenta categoria, referência, texto real da versão bíblica ativa e versão utilizada. A referência é estável durante o dia e o botão **Ler capítulo inteiro** abre o leitor no livro e capítulo correspondentes. Os atalhos principais são Bíblia, Pesquisa, Temas, Mensagens, Referências e Relatórios.
+
+# Mensagens e Pregações
+
+Entrada única para selecionar ou criar uma mensagem/pregação, escolher o tema de trabalho, adicionar vários trechos com comentários, reorganizar a ordem, duplicar e abrir o relatório/PDF. Seções são opcionais e ficam no modo avançado.
+
+# Configurações
+
+Reúne aparência, resumo das versões instaladas, criação/exportação/compartilhamento/restauração de backup e painel Sobre. Operações de arquivo usam os seletores e o compartilhamento seguros do sistema operacional.
+# Auditoria de navegação global — 20/08/2026
+
+| Página | Tipo | Voltar | Motivo |
+|---|---|---:|---|
+| `MainPage` | ROOT | Não | Início do Flyout |
+| `BibleReaderPage` | ROOT | Não | Bíblia no Flyout |
+| `BibleSearchPage` | ROOT | Não | Pesquisar no Flyout |
+| `BibleVersionsPage` | ROOT | Não | Versões no Flyout |
+| `ThemesPage` | ROOT | Não | Temas no Flyout; criação/edição ocorre na própria página |
+| `SavedReferencesPage` | ROOT | Não | Referências guardadas no Flyout |
+| `MessageBibleReferencesPage` | ROOT | Não | Mensagens e Pregações no Flyout |
+| `GlobalSearchPage` | ROOT | Não | Pesquisa global no Flyout |
+| `ReportsPage` | ROOT | Não | Relatórios no Flyout |
+| `SettingsPage` | ROOT | Não | Configurações no Flyout; Sobre é overlay local com Fechar |
+| `BibleComparisonPage` | SECONDARY | Sim | Aberta a partir do leitor bíblico |
+| `MessagesPage` | SECONDARY | Sim | Editor aberto pelo fluxo unificado |
+| `MessageTopicsPage` | SECONDARY | Sim | Gerenciamento aberto a partir de mensagem |
+| `MessageReferencesPage` | SECONDARY | Sim | Detalhes de vínculos de uma mensagem |
+| `MessageDuplicationPage` | SECONDARY | Sim | Formulário auxiliar de duplicação |
+
+As páginas secundárias usam o `PageHeaderView` reutilizável, com `← Voltar` no canto superior direito e o Back nativo oculto visualmente. A ação preserva a pilha real (`..`), é protegida contra toques concorrentes, é coerente com o gesto/botão Android e não redireciona para Início. Páginas ROOT mantêm o hambúrguer do Flyout.
+# Relatórios — gerador profissional
+
+`ReportsPage` permite gerar Pregação ou Mensagem a partir de uma mensagem cadastrada ou de um conjunto de temas. A configuração inclui título, subtítulo, introdução, conclusão e versão bíblica; a prévia é estruturada por seções e referências. Após gerar o PDF, um modal oferece **Salvar em...**, **Compartilhar** e **Cancelar**. Em mobile os painéis são empilhados; em desktop configuração e prévia ocupam colunas.
+# Compartilhar uma Palavra
+
+A parte superior da Home e o Versículo do Dia permanecem inalterados. A área inferior prioriza **Compartilhar uma Palavra**, com botão **Criar card** e atalhos compactos para Bíblia e Pesquisar. `VerseCardStudioPage` é uma rota secundária com Voltar, prévia reativa, escolha bíblica real, tema, saudação, formato, template, fundos online/offline, geração PNG, salvar e compartilhar.

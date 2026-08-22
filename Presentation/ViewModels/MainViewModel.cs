@@ -88,6 +88,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
         OpenReferencesCommand=new AsyncCommand(()=>NavigateAsync("//SavedReferences"));
         OpenDailyVerseChapterCommand=new AsyncCommand(OpenDailyVerseChapterAsync,()=>DailyVerse is not null);
         RetryDailyVerseCommand=new AsyncCommand(LoadDailyVerseAsync,()=>!IsDailyVerseLoading);
+        OpenVerseCardStudioCommand=new AsyncCommand(()=>_navigator.GoToAsync("VerseCardStudio"),()=>!IsBusy&&DailyVerse is not null);
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -119,7 +120,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
 
     public bool HasStatus =>
         !string.IsNullOrWhiteSpace(Status);
-    public DailyVerse? DailyVerse{get=>_dailyVerse;private set{if(Set(ref _dailyVerse,value)){OnPropertyChanged(nameof(HasDailyVerse));OpenDailyVerseChapterCommand.NotifyCanExecuteChanged();}}}
+    public DailyVerse? DailyVerse{get=>_dailyVerse;private set{if(Set(ref _dailyVerse,value)){OnPropertyChanged(nameof(HasDailyVerse));OpenDailyVerseChapterCommand.NotifyCanExecuteChanged();OpenVerseCardStudioCommand.NotifyCanExecuteChanged();}}}
     public bool HasDailyVerse=>DailyVerse is not null;
     public bool IsDailyVerseLoading{get=>_isDailyVerseLoading;private set{if(Set(ref _isDailyVerseLoading,value))RetryDailyVerseCommand.NotifyCanExecuteChanged();}}
     public string DailyVerseError{get=>_dailyVerseError;private set{if(Set(ref _dailyVerseError,value))OnPropertyChanged(nameof(HasDailyVerseError));}}
@@ -194,6 +195,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
     public AsyncCommand OpenReferencesCommand{get;}
     public AsyncCommand OpenDailyVerseChapterCommand{get;}
     public AsyncCommand RetryDailyVerseCommand{get;}
+    public AsyncCommand OpenVerseCardStudioCommand{get;}
 
     public async Task InitializeAsync()
     {
@@ -365,7 +367,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
         OpenComparisonCommand.NotifyCanExecuteChanged();
 
         OpenReportsCommand.NotifyCanExecuteChanged();
-        OpenReferencesCommand.NotifyCanExecuteChanged();OpenDailyVerseChapterCommand.NotifyCanExecuteChanged();RetryDailyVerseCommand.NotifyCanExecuteChanged();
+        OpenReferencesCommand.NotifyCanExecuteChanged();OpenDailyVerseChapterCommand.NotifyCanExecuteChanged();RetryDailyVerseCommand.NotifyCanExecuteChanged();OpenVerseCardStudioCommand.NotifyCanExecuteChanged();
     }
 
     private bool Set<T>(

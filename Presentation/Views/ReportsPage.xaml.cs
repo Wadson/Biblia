@@ -11,4 +11,10 @@ public partial class ReportsPage : ContentPage
         BindingContext = _viewModel = viewModel;
         Loaded += (_, _) => _viewModel.LoadCommand.Execute(null);
     }
+    private void OnCancelExport(object? sender, EventArgs e) => _viewModel.CancelExport();
+    private async void OnHomeClicked(object? sender, EventArgs e)
+    {
+        if (Shell.Current is not null)
+            await Shell.Current.GoToAsync("//Home");
+    }
 }

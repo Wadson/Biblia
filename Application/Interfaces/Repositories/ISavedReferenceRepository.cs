@@ -10,6 +10,8 @@ public interface ISavedReferenceRepository
     Task<SavedReference?> FindCanonicalAsync(int bookReferenceId, int chapter, int verseStart, int verseEnd, CancellationToken cancellationToken = default) =>
         throw new NotSupportedException("Busca canônica não implementada pelo repositório.");
     Task<IReadOnlyList<SavedReferenceDetails>> SearchAsync(string? query, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<SavedReferenceDetails>> GetByThemeIdsAsync(IReadOnlyCollection<long> themeIds, CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException("Consulta explícita por temas não implementada pelo repositório.");
     Task UpdateAsync(SavedReference reference, CancellationToken cancellationToken = default);
     Task AddThemeAsync(long referenceId, long themeId, CancellationToken cancellationToken = default);
     Task RemoveThemeAsync(long referenceId, long themeId, CancellationToken cancellationToken = default);

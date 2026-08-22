@@ -40,6 +40,7 @@ public sealed class MessagesViewModel : INotifyPropertyChanged
         DeleteCommand = new AsyncCommand(DeleteAsync, () => SelectedItem is not null && !IsBusy);
         ReferencesCommand = new AsyncCommand(OpenReferencesAsync, () => SelectedItem is not null && SelectedItem.Id > 0 && !IsBusy);
         TopicsCommand = new AsyncCommand(OpenTopicsAsync, () => SelectedItem is not null && SelectedItem.Id > 0 && !IsBusy);
+        BackCommand = new AsyncCommand(() => _navigator.GoBackAsync(), () => !IsBusy);
     }
 
     public ObservableCollection<Message> Items { get; } = [];
@@ -67,6 +68,7 @@ public sealed class MessagesViewModel : INotifyPropertyChanged
     public AsyncCommand DeleteCommand { get; }
     public AsyncCommand ReferencesCommand { get; }
     public AsyncCommand TopicsCommand { get; }
+    public AsyncCommand BackCommand { get; }
     public event PropertyChangedEventHandler? PropertyChanged;
 
     private async Task LoadAsync() => await RunAsync(async () =>
@@ -136,7 +138,7 @@ public sealed class MessagesViewModel : INotifyPropertyChanged
         finally { IsBusy = false; }
     }
 
-    private void NotifyCommands() { LoadCommand.NotifyCanExecuteChanged(); SearchCommand.NotifyCanExecuteChanged(); NewCommand.NotifyCanExecuteChanged(); SaveCommand.NotifyCanExecuteChanged(); DeleteCommand.NotifyCanExecuteChanged(); ReferencesCommand.NotifyCanExecuteChanged(); TopicsCommand.NotifyCanExecuteChanged(); }
+    private void NotifyCommands() { LoadCommand.NotifyCanExecuteChanged(); SearchCommand.NotifyCanExecuteChanged(); NewCommand.NotifyCanExecuteChanged(); SaveCommand.NotifyCanExecuteChanged(); DeleteCommand.NotifyCanExecuteChanged(); ReferencesCommand.NotifyCanExecuteChanged(); TopicsCommand.NotifyCanExecuteChanged(); BackCommand.NotifyCanExecuteChanged(); }
     private bool Set<T>(ref T field, T value, [CallerMemberName] string? name = null) { if (EqualityComparer<T>.Default.Equals(field, value)) return false; field = value; On(name); return true; }
     private void On(string? name) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 }

@@ -1,5 +1,40 @@
 # Registro de decisões e checkpoints
 
+## 2026-08-20 — Compartilhar uma Palavra
+
+- `BibleReaderPage`, regras de referências e `DailyVerseService` não foram alterados.
+- O render final usa SkiaSharp 4.151.1, compatível com .NET 10/MAUI, e não screenshot da interface.
+- Pexels fica atrás de `INatureMediaService`; nenhuma chave é versionada e o proxy WR Soft é o caminho recomendado para produção.
+- O Studio usa seletores temáticos próprios e catálogo curado do CDN Pexels quando não há proxy/chave, preservando gradientes offline e mensagens explícitas para falha de conexão.
+- As prévias remotas do Studio são baixadas e validadas no cache antes de entrarem na galeria; a UI não depende mais do download silencioso do controle `Image`.
+
+
+## 2026-08-20 — Atalho Home em Relatórios
+
+- A tela raiz `ReportsPage` mantém o menu do Flyout e também oferece um botão grande `⌂ Home` no canto superior direito do cabeçalho do formulário.
+- O atalho navega diretamente para a rota raiz `//Home`, sem criar uma nova página na pilha.
+
+
+## 2026-08-20 — Espaçamento entre referência e texto bíblico
+
+- O espaço posterior da linha de referência foi reduzido de 4 pt para 1 pt.
+- O texto bíblico passou a declarar espaço anterior de 0 pt; nenhum outro elemento do PDF foi alterado.
+
+
+## 2026-08-20 — Compactação das referências no PDF
+
+- Mantido integralmente o layout editorial aprovado.
+- O título da referência passou de 11 pt para 9,5 pt e a versão bíblica foi movida para a mesma linha em 7,5 pt, reduzindo o espaço vertical de cada bloco.
+
+
+## 2026-08-20 — Relatórios como gerador profissional
+
+- `BookReferenceId` deixou de ser texto de apresentação; `ReportService` resolve `BookName` no catálogo real e entrega `FormattedReference` ao PDF/UI.
+- Foi adotado `PDFsharp-MigraDoc` 6.2.4 (MIT), pois a versão Core suporta .NET 10 e MAUI, enquanto QuestPDF não oferece suporte atual a MAUI.
+- Open Sans regular/semibold foi incorporada como recurso para garantir Unicode de forma consistente em Android e Windows.
+- Referências por temas usam consulta parametrizada explícita em `ISavedReferenceRepository.GetByThemeIdsAsync`; referências presentes em vários temas são deduplicadas e preservam os badges dos temas relacionados.
+
+
 ## Decisões iniciais
 
 - Manter o projeto MAUI single-project e separar responsabilidades por pastas/namespaces.
@@ -458,3 +493,80 @@ VALIDAÇÃO: 19/19 testes aprovados; builds Android e Windows concluídos, com W
 - O texto nunca é persistido nem hardcoded: é relido por `IBibleRepository` na versão ativa (ou primeira instalada/habilitada), preservando a referência do dia quando a tradução muda.
 - A Home prioriza o card devocional, mantém atalhos funcionais em duas colunas no mobile e conserva os contadores úteis em “Sua biblioteca”.
 - “Ler capítulo inteiro” usa a rota existente `BibleReader`; parâmetros opcionais foram adicionados de forma compatível para abrir livro/capítulo e selecionar o versículo sem alterar o uso normal do leitor.
+
+# Checkpoint — fluxo único Mensagens e Pregações (2026-08-20)
+
+- O Flyout expõe somente `Mensagens e Pregações` para o domínio; Mensagens, Tópicos, Referências nas mensagens e Duplicação permanecem como rotas internas para compatibilidade.
+- `MessageBibleReferencesPage` é a experiência consolidada: escolha/criação da mensagem, tema obrigatório, seletor bíblico, comentário, referências vinculadas, ordenação, duplicação e acesso a relatório/PDF.
+- Tema, versão, livro e capítulo permanecem após cada inclusão; somente seleção bíblica e comentário contextual são limpos para agilizar séries do mesmo tema.
+- `MessageTopic` continua opcional como “Seção (modo avançado)” e `TopicId = null` permanece suportado. Observação foi reclassificada visualmente como nota contextual opcional.
+- A ordenação usa `IMessageReferenceService.MoveAsync` e a implementação transacional existente de `ReorderReferencesAsync`; nenhum schema ou dado antigo foi removido.
+- O formulário simples não exibe seção/tópico nem nota contextual. Na primeira inclusão sem mensagem selecionada, cria automaticamente uma Pregação com título derivado do tema e grava o vínculo na mesma operação; referências novas usam `TopicId = null` e observação nula.
+
+# Checkpoint — Configurações, Backup e Sobre (2026-08-20)
+
+- Os marcadores visuais `MENSAGENS E PREGAÇÕES` e `SISTEMA` foram removidos do Flyout; as entradas navegáveis permanecem.
+- `SettingsViewModel` coordena `IBackupService`, `IBibleVersionManager`, exportação/compartilhamento de arquivo, seleção de backup, informações reais do app e navegação, sem lógica específica de Android.
+- Criar backup reutiliza integralmente `BackupService`; exportar e compartilhar enviam o ZIP real ao share sheet do sistema, permitindo Arquivos, Drive, WhatsApp, Telegram e demais destinos instalados.
+- Restauração seleciona ZIP, executa `ValidateAsync`, exige confirmação customizada e chama `RestoreAsync`, preservando o backup de segurança existente.
+- Settings lista apenas versões instaladas, destaca a ativa e delega gerenciamento completo à rota `BibleVersions`. Sobre usa versão/build reais via `AppInfo`.
+# Checkpoint — backup com destino e Relatórios premium (20/08/2026)
+
+- “Salvar uma cópia” passou a criar um backup atualizado e abrir o salvador de arquivos nativo, permitindo ao usuário escolher pasta e nome no gerenciador do sistema.
+- A ação redundante “Criar backup” foi removida; salvar e compartilhar geram o ZIP automaticamente.
+- “Compartilhar” preserva a folha nativa de aplicativos e “Restaurar” preserva validação e confirmação.
+- Relatórios recebeu cartões de indicadores, seletor de mensagens com estados normal/selecionado, ações temáticas e estado vazio explícito.
+- O projeto permanece em .NET 10; Microsoft.Maui.Controls foi atualizado para 10.0.60, requisito do CommunityToolkit.Maui 14.2.2 usado pelo salvador nativo.
+# Checkpoint — navegação Voltar e saída global (20/08/2026)
+
+- Todas as `ContentPage` foram classificadas entre ROOT e SECONDARY em `docs/TELAS.md`.
+- O mecanismo nativo do Shell foi preservado para que botão visual e Android Back compartilhem a mesma pilha.
+- O Flyout recebeu a ação Sair no rodapé, com confirmação customizada e serviço de plataforma abstraído por `IApplicationExitService`.
+- A saída não é exibida no iOS e não utiliza `Environment.Exit`, `Process.Kill` ou `DisplayAlert`.
+# Checkpoint — Voltar explícito nos formulários secundários (20/08/2026)
+
+- Este checkpoint foi substituído pela padronização global descrita ao final do documento.
+# Checkpoint — experiência imersiva “Ler Bíblia” (20/08/2026)
+
+- O painel alto com fileiras permanentes foi substituído por uma barra compacta única: Livro, Capítulo, Versão e Mais.
+- A leitura permanece virtualizada em `CollectionView`, agora com texto contínuo, cabeçalho de capítulo discreto e seleção no padrão `BtSelectedBackground`/`BtSelectedBorder`.
+- A regra de seleção foi preservada: primeiro toque inicia, segundo define intervalo e novo toque no único versículo desmarca.
+- Copiar e Comparar permanecem nos Commands existentes e aparecem em barra contextual somente durante uma seleção.
+- Tipografia persistente foi movida para Opções de leitura; anterior/próximo ficam no final do capítulo.
+- A barra bíblica recolhe ao rolar para baixo e reaparece ao rolar para cima, por comportamento estritamente visual da View.
+## 2026-08-20 — Seletores temáticos no leitor bíblico
+
+- Os seletores nativos de livro, capítulo e versão da tela `Ler Bíblia` foram substituídos por painéis internos do design system.
+- A alteração preserva o fluxo e os métodos existentes do `BibleReaderViewModel`; somente a apresentação e a captura da escolha foram modernizadas.
+- As opções normais usam superfície branca e borda `BtBorder`; a opção atual usa `BtSelectedBackground`, `BtSelectedBorder` e `BtPrimary`.
+
+# Checkpoint — miniaturas remotas no Estúdio de cards (20/08/2026)
+
+- A busca baixa de seis a oito miniaturas JPEG válidas para o cache privado do aplicativo antes de publicá-las na galeria.
+- A galeria é renderizada por HTML local em `WebView`, usando `data:` URLs produzidas somente a partir dos arquivos validados. Isso evita a falha do handler de imagens do Android ao abrir caminhos do cache privado e não expõe conteúdo local à rede.
+- Os toques nas miniaturas usam o esquema interno `bibliatema://photo/{id}`, interceptado pela página e encaminhado ao ViewModel; a opção selecionada mantém a borda azul do tema.
+- Falha de download, arquivo incompleto, timeout ou ausência de conexão não produz cartões vazios: o usuário recebe a mensagem de conexão e continua com os fundos locais.
+- A pesquisa passou a ser paginada em lotes de oito. “Carregar mais fotos” acumula novos resultados, preserva o lote anterior e elimina IDs repetidos.
+- Galeria e prévia recebem uma nova fonte HTML local a cada seleção; isso força o handler Android a redesenhar imediatamente o JPEG escolhido, sem aguardar a geração final do PNG.
+- O grid mantém altura controlada e rolagem vertical interna, com barra permanente em azul primário sobre trilho `Selected Background`; os novos lotes podem ser percorridos sem deslocar o formulário inteiro.
+- Como o WebView Android oculta o scrollbar CSS/nativo em alguns aparelhos, o indicador passou a ser desenhado dentro do HTML: trilho de 13 px e cursor azul com mínimo de 46 px, sincronizado à posição real da rolagem.
+
+# Checkpoint — cabeçalho Voltar global e reutilizável (20/08/2026)
+
+- A auditoria de `Presentation/Views` e das rotas registradas no Shell confirmou seis páginas secundárias: Comparar versões, Mensagens, Tópicos, Referências da mensagem, Duplicar mensagem e Criar card.
+- Todas usam o mesmo `PageHeaderView`: `BtHeader` (`#0D1E30`), título responsivo, ação `← Voltar` em `BtGoldSoft`, área mínima de 44dp, semântica acessível e estados hover/pressionado.
+- O Back nativo do Shell foi ocultado somente como elemento visual nessas páginas. O componente chama `IAppNavigator.GoBackAsync()` e o gesto/botão Android continua usando a mesma pilha, preservando contexto e estado da página anterior.
+- A proteção interna impede duas navegações simultâneas em toques rápidos. Toolbars textuais duplicadas foram removidas.
+- Páginas raiz continuam sem Voltar e mantêm o menu Flyout. A regra para páginas futuras foi registrada em `docs/DESIGN_SYSTEM.md`.
+
+# Checkpoint — retorno também nas entradas do Flyout e barra de galeria tátil (20/08/2026)
+
+- Por requisito de uso, Pesquisar na Bíblia, Versões da Bíblia, Temas, Minhas Referências, Mensagens e Pregações, Pesquisa global, Relatórios e Configurações também receberam o `PageHeaderView`.
+- Nessas entradas, o componente retorna pela pilha quando ela existe e usa `//Home` como destino seguro quando a página é a raiz do item do Flyout. O bloqueio de navegação concorrente permanece centralizado.
+- A barra vertical do Estúdio de cards passou de 13 para 28 px, com cursor mínimo de 56 px e eventos de ponteiro para toque, arraste e toque no trilho.
+- A prévia de Tema centraliza, como um único conjunto visual, o indicador de cor e o nome do tema.
+
+# Checkpoint — correção do Voltar e controles laterais da galeria (20/08/2026)
+
+- O `InternalBackCommand` do `PageHeaderView` passou a ser criado antes de `InitializeComponent`; assim, o binding XAML recebe o comando já na primeira avaliação e o botão funciona em todas as instâncias do cabeçalho.
+- A barra arrastável da galeria foi substituída por setas laterais temáticas de 44×54 px. Toque executa avanço por página e toque prolongado repete a rolagem; os controles indicam visualmente quando o início ou o fim foi alcançado.

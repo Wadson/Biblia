@@ -10,7 +10,7 @@ namespace Biblia.Presentation.ViewModels;
 
 public sealed class BibleReaderViewModel:INotifyPropertyChanged
 {
-    private const double DefaultFontSize=18, MinimumFontSize=14, MaximumFontSize=30, FontSizeStep=2; private readonly IBibleVersionManager _versions;private readonly IBibleRepository _bible;private readonly ISavedReferenceRepository _saved;private readonly IThemeRepository _themes;private readonly IMessageRepository _messages;private readonly IClipboardService _clipboard;private readonly ISettingsService? _settings;private readonly IAppNavigator _navigator;
+    private const double DefaultFontSize=21, MinimumFontSize=15, MaximumFontSize=31, FontSizeStep=2; private readonly IBibleVersionManager _versions;private readonly IBibleRepository _bible;private readonly ISavedReferenceRepository _saved;private readonly IThemeRepository _themes;private readonly IMessageRepository _messages;private readonly IClipboardService _clipboard;private readonly ISettingsService? _settings;private readonly IAppNavigator _navigator;
     private BibleVersionCatalogEntry? _version;private BibleBook? _book;private int _chapter;private BibleVerse? _start;private BibleVerse? _end;private Theme? _theme;private Message? _message;private SavedReference? _persisted;private string _status="";private string _comparison="";private bool _busy,_awaitingRangeEnd;private double _verseFontSize=DefaultFontSize;private int? _initialBookId,_initialChapter,_initialVerse;private string? _initialVersionCode;
     public BibleReaderViewModel(IBibleVersionManager versions,IBibleRepository bible,ISavedReferenceRepository saved,IThemeRepository themes,IMessageRepository messages,IClipboardService clipboard,IAppNavigator navigator,ISettingsService? settings=null)
     {
