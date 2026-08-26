@@ -65,11 +65,26 @@ public sealed class PexelsNatureMediaService(IHttpClientFactory clients, IAppPat
     public async Task<string?> GetRenderFileAsync(NaturePhoto photo, CancellationToken cancellationToken = default)
     {
         if (photo.IsLocal) return null; var folder = Path.Combine(paths.CacheDirectory, "verse-cards", "backgrounds"); Directory.CreateDirectory(folder); var target = Path.Combine(folder, $"pexels-{photo.Id}.jpg");
-        if (File.Exists(target) && new FileInfo(target).Length > 0) return target;
+        if (File.Exists(target))
+        {
+            var cached = await File.ReadAllBytesAsync(target, cancellationToken);
+            if (IsJpeg(cached)) return target;
+            File.Delete(target);
+        }
         try
         {
             var bytes = await clients.CreateClient("NatureMedia").GetByteArrayAsync(photo.RenderUrl, cancellationToken);
-            await File.WriteAllBytesAsync(target, bytes, cancellationToken);
+            if (!IsJpeg(bytes)) throw new InvalidDataException("A resposta da imagem não contém um JPEG válido.");
+            var temporary = target + ".download";
+            try
+            {
+                await File.WriteAllBytesAsync(temporary, bytes, cancellationToken);
+                File.Move(temporary, target, true);
+            }
+            finally
+            {
+                if (File.Exists(temporary)) File.Delete(temporary);
+            }
             return target;
         }
         catch (HttpRequestException ex)
@@ -79,6 +94,10 @@ public sealed class PexelsNatureMediaService(IHttpClientFactory clients, IAppPat
         catch (TaskCanceledException ex) when (!cancellationToken.IsCancellationRequested)
         {
             throw new InvalidOperationException(ConnectionMessage, ex);
+        }
+        catch (InvalidDataException ex)
+        {
+            throw new InvalidOperationException("A imagem recebida é inválida. Escolha outro fundo ou tente novamente.", ex);
         }
     }
 
@@ -120,13 +139,22 @@ public sealed class PexelsNatureMediaService(IHttpClientFactory clients, IAppPat
         var downloads = photos.Select(async photo =>
         {
             var target = Path.Combine(folder, $"pexels-preview-{photo.Id}.jpg");
-            if (File.Exists(target) && IsJpeg(await File.ReadAllBytesAsync(target, cancellationToken))) return photo with { PreviewUrl = new Uri(target).AbsoluteUri };
+            if (File.Exists(target) && IsJpeg(await File.ReadAllBytesAsync(target, cancellationToken))) return photo with { PreviewUrl = target };
             try
             {
                 var bytes = await client.GetByteArrayAsync(photo.PreviewUrl, cancellationToken);
                 if (!IsJpeg(bytes)) throw new InvalidDataException("A resposta da imagem não contém um JPEG válido.");
-                await File.WriteAllBytesAsync(target, bytes, cancellationToken);
-                return photo with { PreviewUrl = new Uri(target).AbsoluteUri };
+                var temporary = target + ".download";
+                try
+                {
+                    await File.WriteAllBytesAsync(temporary, bytes, cancellationToken);
+                    File.Move(temporary, target, true);
+                }
+                finally
+                {
+                    if (File.Exists(temporary)) File.Delete(temporary);
+                }
+                return photo with { PreviewUrl = target };
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { throw; }
             catch { return null; }

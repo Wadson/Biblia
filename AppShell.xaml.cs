@@ -52,9 +52,11 @@ public partial class AppShell : Shell
         Items.Add(CreateFlyoutItem<SavedReferencesPage>(services, "Referências guardadas", "SavedReferences", "icon_bookmark.png"));
 
         // ── MENSAGENS E PREGAÇÕES ──
+        Items.Add(CreateSection("MENSAGENS E PREGAÇÕES"));
         Items.Add(CreateFlyoutItem<MessageBibleReferencesPage>(services, "Mensagens e Pregações", "MessageBibleReferences", "icon_preach.png"));
 
         // ── SISTEMA E CONFIGURAÇÕES ──
+        Items.Add(CreateSection("SISTEMA E CONFIGURAÇÕES"));
         Items.Add(CreateFlyoutItem<GlobalSearchPage>(services, "Pesquisa global", "GlobalSearch", "icon_glob_search.png"));
         Items.Add(CreateFlyoutItem<ReportsPage>(services, "Relatórios", "Reports", "icon_reports.png"));
         Items.Add(CreateFlyoutItem<SettingsPage>(services, "Configurações", "Settings", "icon_settings.png"));

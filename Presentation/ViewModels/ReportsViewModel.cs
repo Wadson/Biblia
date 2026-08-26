@@ -56,7 +56,7 @@ public sealed class ReportsViewModel : INotifyPropertyChanged
         Status = Report.References.Count == 0 ? "Prévia criada, mas não há referências vinculadas à origem selecionada." : $"Prévia pronta com {Report.References.Count} referência(s).";
     });
     private async Task CreatePdfAsync() => await RunAsync(async () => { GeneratedPdfPath = await _pdf.CreateSermonPdfAsync(Report!); ExportVisible = true; Status = "PDF gerado com sucesso."; });
-    private async Task SaveAsync() => await RunAsync(async () => { await _files.SaveCopyAsync(GeneratedPdfPath); ExportVisible = false; Status = "PDF salvo no destino escolhido."; });
+    private async Task SaveAsync() => await RunAsync(async () => { var outcome=await _files.SaveCopyAsync(GeneratedPdfPath); if(outcome==FileSaveOutcome.Saved){ExportVisible = false; Status = "PDF salvo no destino escolhido.";}else Status="Salvamento cancelado."; });
     private async Task ShareAsync() => await RunAsync(async () => { await _files.ShareAsync(GeneratedPdfPath); ExportVisible = false; Status = "Compartilhamento aberto."; });
     public void CancelExport() => ExportVisible = false;
 

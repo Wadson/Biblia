@@ -25,6 +25,7 @@
     <Compile Include="..\..\Application\Services\**\*.cs" LinkBase="Application\Services" />
     <Compile Include="..\..\Infrastructure\AppDatabase\**\*.cs" LinkBase="Infrastructure\AppDatabase" />
     <Compile Include="..\..\Infrastructure\Repositories\**\*.cs" LinkBase="Infrastructure\Repositories" />
+    <Compile Include="..\..\Infrastructure\Files\BackupService.cs" Link="Infrastructure\Files\BackupService.cs" />
     <Compile Include="..\..\Infrastructure\BibleDatabases\BibleValidationService.cs" Link="Infrastructure\BibleDatabases\BibleValidationService.cs" />
     <Compile Include="..\..\Infrastructure\BibleDatabases\BibleRepository.cs" Link="Infrastructure\BibleDatabases\BibleRepository.cs" />
     <Compile Include="..\..\Presentation\Commands\AsyncCommand.cs" Link="Presentation\Commands\AsyncCommand.cs" />

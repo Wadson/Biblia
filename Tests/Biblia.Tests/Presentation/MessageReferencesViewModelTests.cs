@@ -1,4 +1,5 @@
 using Biblia.Domain.Entities;
+using Biblia.Domain.Enums;
 using Biblia.Presentation.ViewModels;
 using Xunit;
 
@@ -34,6 +35,33 @@ public sealed class MessageReferencesViewModelTests
         viewModel.SelectThemeCommand.Execute(holiness); viewModel.SelectThemeCommand.Execute(promises);
 
         Assert.False(holiness.IsSelected); Assert.True(promises.IsSelected); Assert.Equal("Promessas",viewModel.SelectedThemeText);
+    }
+
+    [Theory]
+    [InlineData(MessageType.Message, "Mensagem")]
+    [InlineData(MessageType.Sermon, "Pregação")]
+    [InlineData(MessageType.Study, "Estudo")]
+    [InlineData(MessageType.Devotional, "Devocional")]
+    public void MessageType_UsesPortugueseLabels(MessageType type, string expected)
+    {
+        var viewModel = CreateViewModel();
+        viewModel.SelectedMessage = new Message(1, "Título", null, type, default, default);
+
+        Assert.Equal(expected, viewModel.MessageType);
+    }
+
+    [Fact]
+    public void SearchResult_MarkAlreadyAdded_UpdatesResultState()
+    {
+        var item = Verse(16);
+
+        item.SetSelected(true);
+        item.MarkAlreadyAdded();
+        item.SetSelected(false);
+
+        Assert.True(item.IsAlreadyAdded);
+        Assert.False(item.IsSelected);
+        Assert.Equal("Já adicionada a um tema", item.AddedStatus);
     }
 
     private static BibleVerseItemViewModel Verse(int number) => new(new BibleVerse("ACF",1,"Gênesis",1,number,$"Versículo {number}"));

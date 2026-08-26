@@ -32,7 +32,7 @@ public sealed class AppDatabaseTests
             var themes = new ThemeRepository(database, clock);
             var theme = await themes.CreateAsync("Graça", "#336699", "Doutrina da graça");
             Assert.Equal("Graça", (await themes.GetAsync(theme.Id))!.Name);
-            await Assert.ThrowsAsync<SqliteException>(() => themes.CreateAsync("graça", null, null));
+            await Assert.ThrowsAsync<Biblia.Domain.Exceptions.DomainValidationException>(() => themes.CreateAsync("graça", null, null));
             await Assert.ThrowsAsync<SqliteException>(() => themes.CreateAsync("Inválido", "azul", null));
             await themes.UpdateAsync(theme with { Description = "Descrição atualizada" });
             Assert.Equal("Descrição atualizada", (await themes.GetAsync(theme.Id))!.Description);

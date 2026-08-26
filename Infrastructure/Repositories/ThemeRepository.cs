@@ -1,6 +1,8 @@
 using Biblia.Application.Interfaces;
 using Biblia.Application.Interfaces.Repositories;
 using Biblia.Domain.Entities;
+using Biblia.Domain.Exceptions;
+using Microsoft.Data.Sqlite;
 
 namespace Biblia.Infrastructure.Repositories;
 
@@ -21,7 +23,15 @@ public sealed class ThemeRepository : SqliteRepositoryBase, IThemeRepository
         AddNullable(command.Parameters, "$description", description);
         command.Parameters.AddWithValue("$created", now.ToString("O"));
         command.Parameters.AddWithValue("$updated", now.ToString("O"));
-        var id = Convert.ToInt64(await command.ExecuteScalarAsync(cancellationToken));
+        long id;
+        try
+        {
+            id = Convert.ToInt64(await command.ExecuteScalarAsync(cancellationToken));
+        }
+        catch (SqliteException ex) when (IsUniqueNameViolation(ex))
+        {
+            throw new DomainValidationException("Já existe um tema com esse nome.");
+        }
         return new Theme(id, name.Trim(), colorHex, description, now, now);
     }
 
@@ -94,7 +104,15 @@ public sealed class ThemeRepository : SqliteRepositoryBase, IThemeRepository
         AddNullable(command.Parameters, "$description", theme.Description);
         command.Parameters.AddWithValue("$updated", _clock.UtcNow.ToString("O"));
         command.Parameters.AddWithValue("$id", theme.Id);
-        if (await command.ExecuteNonQueryAsync(cancellationToken) != 1) throw new KeyNotFoundException("Tema não encontrado.");
+        try
+        {
+            if (await command.ExecuteNonQueryAsync(cancellationToken) != 1)
+                throw new KeyNotFoundException("Tema não encontrado.");
+        }
+        catch (SqliteException ex) when (IsUniqueNameViolation(ex))
+        {
+            throw new DomainValidationException("Já existe um tema com esse nome.");
+        }
     }
 
     public async Task DeleteAsync(long id, CancellationToken cancellationToken = default)
@@ -107,4 +125,7 @@ public sealed class ThemeRepository : SqliteRepositoryBase, IThemeRepository
     }
 
     private static Theme Map(Microsoft.Data.Sqlite.SqliteDataReader r) => new(r.GetInt64(0), r.GetString(1), r.IsDBNull(2) ? null : r.GetString(2), r.IsDBNull(3) ? null : r.GetString(3), ReadDate(r, 4), ReadDate(r, 5));
+    private static bool IsUniqueNameViolation(SqliteException exception) =>
+        exception.SqliteErrorCode == 19 &&
+        (exception.SqliteExtendedErrorCode == 2067 || exception.Message.Contains("Theme.Name", StringComparison.OrdinalIgnoreCase));
 }

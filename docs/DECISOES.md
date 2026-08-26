@@ -570,3 +570,50 @@ VALIDAÇÃO: 19/19 testes aprovados; builds Android e Windows concluídos, com W
 
 - O `InternalBackCommand` do `PageHeaderView` passou a ser criado antes de `InitializeComponent`; assim, o binding XAML recebe o comando já na primeira avaliação e o botão funciona em todas as instâncias do cabeçalho.
 - A barra arrastável da galeria foi substituída por setas laterais temáticas de 44×54 px. Toque executa avanço por página e toque prolongado repete a rolagem; os controles indicam visualmente quando o início ou o fim foi alcançado.
+
+# Checkpoint — integridade de Temas e resiliência do Estúdio de cards (22/08/2026)
+
+- O estado de edição de Tema passou a ser explícito em `EditingThemeId`; selecionar um item não altera o modo do formulário, e editar exige a ação dedicada. Novo, cancelar, inclusão concluída, exclusão e recarga zeram o identificador.
+- A persistência mantém `INSERT` e `UPDATE ... WHERE Id=$id` separados. O update continua exigindo exatamente uma linha, e a unicidade case-insensitive do nome agora é traduzida para uma validação amigável sem alterar o registro existente.
+- Comandos assíncronos de UI passaram a conter e registrar exceções no limite de `async void`, evitando exceções não observadas no dispatcher WinUI.
+- O renderizador valida o bitmap antes de acessar suas dimensões, usa gradiente offline para imagem inválida, resolve fontes pelo assembly do próprio serviço e usa a fonte padrão como contingência.
+- Downloads de imagens agora validam JPEG, escrevem primeiro em arquivo temporário, substituem o cache atomicamente e removem arquivos parciais; previews expõem caminhos locais diretamente, sem conversão ambígua de path Windows para URI.
+- Validação: 42 testes aprovados; builds Windows `net10.0-windows10.0.19041.0` e Android `net10.0-android/android-arm64` concluídos sem erros.
+
+# Checkpoint — backup e restauração multiplataforma (22/08/2026)
+
+- `BackupService` permanece independente da UI e das plataformas. A criação passou a usar a API de snapshot do SQLite, incluindo dados ainda presentes no WAL, antes de montar o ZIP com `manifest.json` e `bibliatema.db`.
+- O banco extraído é validado por `PRAGMA integrity_check` e pela versão real de `SchemaMigration` antes de qualquer substituição.
+- `AppDatabase.ReplaceAsync` coordena limpeza dos pools, troca atômica com arquivo de rollback, reset de `_initialized` e reinicialização. Se a abertura do banco restaurado falhar, o banco anterior é recolocado e reinicializado.
+- O salvamento distingue resultado salvo de cancelamento. WinUI e Android usam seus seletores nativos pelo `FileSaver`; iOS e MacCatalyst usam o fallback nativo suportado pelo mesmo Toolkit.
+- No Android, resultados do `FilePicker` sem path físico são copiados do stream do `content URI` para cache privado antes da validação e restauração.
+- Validação: 48 testes aprovados; builds Windows `net10.0-windows10.0.19041.0` e Android `net10.0-android/android-arm64` concluídos sem erros.
+
+# Checkpoint — pesquisa bíblica e responsividade em Mensagens e Pregações (26/08/2026)
+
+- A tela de referências de Mensagens e Pregações recebeu pesquisa por palavra ou frase no texto bíblico. A consulta usa exclusivamente o código da versão selecionada e mantém os bancos de `Versoes` somente leitura.
+- Os resultados reutilizam a coleção e a lista visual `Verses`; não existe uma segunda lista de resultados. Cada item identifica livro, capítulo e versículo e, ao ser tocado, define a localização canônica usada pelo mesmo comando de inclusão da referência no tema selecionado.
+- Os rótulos dos tipos de mensagem passaram a usar português. O reposicionamento horizontal de versão, livro e capítulo usa `MakeVisible`, evitando o recorte dos itens nas bordas.
+- A lista inferior de referências passou a preencher a largura disponível, quebrar textos longos e distribuir suas ações em `FlexLayout` com quebra de linha, impedindo que o botão Remover seja cortado no computador ou celular.
+- Na pesquisa bíblica, referências que já possuem ao menos um tema são identificadas por coordenada canônica e intervalo, recebem o selo “Já adicionada” e não podem ser escolhidas novamente. Uma inclusão bem-sucedida atualiza o selo imediatamente na lista atual.
+- O layout adaptativo existente foi preservado: duas colunas a partir de 800 dp e fluxo vertical em telas estreitas.
+- A tela Relatórios substituiu o `FlexLayout` externo por um grid adaptativo com colunas efetivamente limitadas. Isso força textos, cartões e a prévia a respeitarem a largura disponível no computador e mantém o empilhamento em telas estreitas.
+- Validação: 11 testes relacionados a mensagens aprovados; build Windows isolado concluído com 0 avisos e 0 erros. Na suíte completa anterior, 51/52 testes passaram; a falha repetível e fora deste escopo está em `BackupServiceTests.Restore_ReplacesDataAndDatabaseRemainsOperational`, por colisão do nome de dois arquivos de backup criados no mesmo segundo.
+
+# Checkpoint — organização do menu lateral no Windows (26/08/2026)
+
+- O Flyout passou a usar largura de 320 dp e cartões centralizados de 296 dp para impedir que a medição intrínseca dos títulos produza botões com larguras diferentes ou cortados.
+- Cabeçalhos de seção usam apresentação compacta, sem ícone, borda ou superfície de botão. Foram incluídas as divisões ausentes “Mensagens e Pregações” e “Sistema e Configurações”.
+- O cabeçalho da marca foi reduzido para 152 dp, ampliando a área rolável; o rodapé “Sair” permanece fixo e adota a mesma largura dos itens de navegação.
+- A ordem funcional das rotas foi preservada e a lista central continua com rolagem nativa no computador e no celular.
+- Validação: build Windows isolado concluído com 0 avisos e 0 erros.
+
+# Checkpoint — auditoria responsiva do Gerador de pregações (26/08/2026)
+
+- O conteúdo do `ScrollView` e o grid principal de Relatórios agora preenchem a largura disponível até o limite de 1180 dp, removendo a faixa vazia que comprimia e cortava a prévia no Windows.
+- A ação “Gerar PDF” usa uma coluna limitada de 132 dp, com título quebrável na coluna restante; o painel e o cartão de prévia também declaram preenchimento horizontal explícito.
+- Títulos, subtítulos, identificação da versão, introdução e demais textos editoriais passam a quebrar dentro da largura do cartão, sem criar medida horizontal infinita.
+- O seletor de origem empilha suas opções em janelas estreitas e usa duas colunas a partir de 900 dp, preservando integralmente os rótulos.
+- Após “Gerar prévia”, a página retorna ao topo para apresentar imediatamente “Gerar PDF”, sem exigir que o usuário procure a ação fora da área visível.
+- Estados visuais, regras de geração, conteúdo do relatório e exportação permaneceram inalterados.
+- Validação: build Windows isolado concluído com 0 avisos e 0 erros.

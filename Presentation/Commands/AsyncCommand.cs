@@ -2,7 +2,7 @@ using System.Windows.Input;
 
 namespace Biblia.Presentation.Commands;
 
-public sealed class AsyncCommand(Func<Task> execute,Func<bool>? canExecute=null):ICommand
+public sealed class AsyncCommand(Func<Task> execute,Func<bool>? canExecute=null,Action<Exception>? onException=null):ICommand
 {
     private bool _running;
     public event EventHandler? CanExecuteChanged;
@@ -12,12 +12,14 @@ public sealed class AsyncCommand(Func<Task> execute,Func<bool>? canExecute=null)
         if(!CanExecute(parameter))return;
         _running=true;CanExecuteChanged?.Invoke(this,EventArgs.Empty);
         try{await execute();}
+        catch(OperationCanceledException){ }
+        catch(Exception ex){System.Diagnostics.Trace.TraceError($"AsyncCommand failed: {ex}");onException?.Invoke(ex);}
         finally{_running=false;CanExecuteChanged?.Invoke(this,EventArgs.Empty);}
     }
     public void NotifyCanExecuteChanged()=>CanExecuteChanged?.Invoke(this,EventArgs.Empty);
 }
 
-public sealed class AsyncCommand<T>(Func<T, Task> execute, Func<T, bool>? canExecute = null) : ICommand
+public sealed class AsyncCommand<T>(Func<T, Task> execute, Func<T, bool>? canExecute = null, Action<Exception>? onException = null) : ICommand
 {
     private bool _running;
     public event EventHandler? CanExecuteChanged;
@@ -28,6 +30,8 @@ public sealed class AsyncCommand<T>(Func<T, Task> execute, Func<T, bool>? canExe
         _running = true;
         CanExecuteChanged?.Invoke(this, EventArgs.Empty);
         try { await execute(value); }
+        catch (OperationCanceledException) { }
+        catch (Exception ex) { System.Diagnostics.Trace.TraceError($"AsyncCommand failed: {ex}"); onException?.Invoke(ex); }
         finally { _running = false; CanExecuteChanged?.Invoke(this, EventArgs.Empty); }
     }
     public void NotifyCanExecuteChanged() => CanExecuteChanged?.Invoke(this, EventArgs.Empty);

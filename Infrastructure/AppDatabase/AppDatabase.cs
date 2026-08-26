@@ -33,30 +33,65 @@ public sealed class AppDatabase : IAppDatabase
         try
         {
             if (_initialized) return;
-            Directory.CreateDirectory(Path.GetDirectoryName(DatabasePath)!);
-
-            await using var connection = await OpenConnectionCoreAsync(cancellationToken);
-            await ExecuteNonQueryAsync(connection, "PRAGMA journal_mode = WAL;", cancellationToken);
-            await ExecuteNonQueryAsync(connection, "PRAGMA foreign_keys = ON;", cancellationToken);
-            await EnsureMigrationTableAsync(connection, cancellationToken);
-            var version = await ReadSchemaVersionAsync(connection, cancellationToken);
-
-            if (version > CurrentSchemaVersion)
-                throw new InvalidOperationException($"O banco usa schema {version}, superior ao suportado ({CurrentSchemaVersion}).");
-
-            if (version < 1)
-                await ApplyMigration1Async(connection, cancellationToken);
-
-            if (version < 2)
-                await ApplyMigration2Async(connection, cancellationToken);
-
-            _initialized = true;
-            _logger.LogInformation("Banco do aplicativo inicializado no schema {SchemaVersion}.", CurrentSchemaVersion);
+            await InitializeCoreAsync(cancellationToken);
         }
         finally
         {
             _initializationGate.Release();
         }
+    }
+
+    public async Task ReplaceAsync(string stagedDatabasePath, CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(stagedDatabasePath);
+        var staged = Path.GetFullPath(stagedDatabasePath);
+        if (!File.Exists(staged)) throw new FileNotFoundException("Banco preparado para restauração não encontrado.", staged);
+        if (!string.Equals(Path.GetDirectoryName(staged), Path.GetDirectoryName(DatabasePath), StringComparison.OrdinalIgnoreCase))
+            throw new ArgumentException("O banco preparado deve estar no mesmo diretório do banco ativo.", nameof(stagedDatabasePath));
+        await _initializationGate.WaitAsync(cancellationToken);
+        var rollback = DatabasePath + ".restore-rollback";
+        try
+        {
+            SqliteConnection.ClearAllPools();
+            if (File.Exists(rollback)) File.Delete(rollback);
+            File.Replace(staged, DatabasePath, rollback, ignoreMetadataErrors: true);
+            _initialized = false;
+            await InitializeCoreAsync(cancellationToken);
+            if (File.Exists(rollback)) File.Delete(rollback);
+            _logger.LogInformation("Banco do aplicativo restaurado e reinicializado com sucesso.");
+        }
+        catch
+        {
+            SqliteConnection.ClearAllPools();
+            _initialized = false;
+            if (File.Exists(rollback))
+            {
+                File.Copy(rollback, DatabasePath, overwrite: true);
+                await InitializeCoreAsync(CancellationToken.None);
+            }
+            throw;
+        }
+        finally
+        {
+            if (File.Exists(rollback)) File.Delete(rollback);
+            _initializationGate.Release();
+        }
+    }
+
+    private async Task InitializeCoreAsync(CancellationToken cancellationToken)
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(DatabasePath)!);
+        await using var connection = await OpenConnectionCoreAsync(cancellationToken);
+        await ExecuteNonQueryAsync(connection, "PRAGMA journal_mode = WAL;", cancellationToken);
+        await ExecuteNonQueryAsync(connection, "PRAGMA foreign_keys = ON;", cancellationToken);
+        await EnsureMigrationTableAsync(connection, cancellationToken);
+        var version = await ReadSchemaVersionAsync(connection, cancellationToken);
+        if (version > CurrentSchemaVersion)
+            throw new InvalidOperationException($"O banco usa schema {version}, superior ao suportado ({CurrentSchemaVersion}).");
+        if (version < 1) await ApplyMigration1Async(connection, cancellationToken);
+        if (version < 2) await ApplyMigration2Async(connection, cancellationToken);
+        _initialized = true;
+        _logger.LogInformation("Banco do aplicativo inicializado no schema {SchemaVersion}.", CurrentSchemaVersion);
     }
 
     public async Task<int> GetSchemaVersionAsync(CancellationToken cancellationToken = default)

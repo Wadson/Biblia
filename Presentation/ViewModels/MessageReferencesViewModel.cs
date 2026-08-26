@@ -67,8 +67,8 @@ public sealed class MessageReferencesViewModel : INotifyPropertyChanged
     private int _chapter;
     private int? _selectionStart, _selectionEnd;
     private ThemeSelectionItem? _selectedTheme;
-    private string _comment = "", _observation = "", _status = "", _themeSearchText = "";
-    private bool _busy, _bibleBusy, _themeSheetOpen, _topicSheetOpen;
+    private string _comment = "", _observation = "", _status = "", _themeSearchText = "", _bibleSearchText = "";
+    private bool _busy, _bibleBusy, _themeSheetOpen, _topicSheetOpen, _isBibleSearchMode;
     private CancellationTokenSource? _themeSearchCancellation;
     private readonly List<MessageReferenceItem> _allItems = [];
     private long? _requestedMessageId;
@@ -77,6 +77,7 @@ public sealed class MessageReferencesViewModel : INotifyPropertyChanged
     {
         _messagesService = messagesService; _topicsService = topicsService; _references = references; _saved = saved; _themesService = themesService; _versionsService = versionsService; _bible = bible; _navigator = navigator;_duplication=duplication;
         LoadCommand = new(LoadAsync, () => !IsBusy);
+        SearchBibleCommand = new(SearchBibleAsync, CanSearchBible);
         AddCommand = new(AddAsync, CanAdd);
         SaveCommand = new(SaveAsync, () => EditingItem is not null && SelectedTheme is not null && !IsBusy);
         ToggleVerseCommand = new(ToggleVerseAsync, _ => !IsBibleBusy);
@@ -112,7 +113,14 @@ public sealed class MessageReferencesViewModel : INotifyPropertyChanged
     public Message? SelectedMessage { get => _message; set { if (Set(ref _message, value)) _ = LoadMessageAsync(); } }
     public long? RequestedMessageId { get => _requestedMessageId; set => Set(ref _requestedMessageId, value); }
     public string MessageTitle => SelectedMessage?.Title ?? "Nenhuma mensagem selecionada";
-    public string MessageType => SelectedMessage?.Type.ToString() ?? "Selecione uma mensagem para continuar.";
+    public string MessageType => SelectedMessage is null ? "Selecione uma mensagem para continuar." : SelectedMessage.Type switch
+    {
+        Biblia.Domain.Enums.MessageType.Message => "Mensagem",
+        Biblia.Domain.Enums.MessageType.Sermon => "Pregação",
+        Biblia.Domain.Enums.MessageType.Study => "Estudo",
+        Biblia.Domain.Enums.MessageType.Devotional => "Devocional",
+        _ => SelectedMessage.Type.ToString()
+    };
     public bool HasMessage => SelectedMessage is not null;
     public bool HasThemes=>ThemeOptions.Count>0;
     public bool HasTopics => Topics.Count > 0;
@@ -120,9 +128,9 @@ public sealed class MessageReferencesViewModel : INotifyPropertyChanged
     public string SelectedTopicText => SelectedTopic?.Title ?? (HasTopics ? "Selecionar tópico (opcional)" : "Nenhum tópico criado.");
     public MessageReferenceItem? EditingItem { get => _editingItem; private set { if (Set(ref _editingItem, value)) { On(nameof(IsEditing)); NotifyCommands(); } } }
     public bool IsEditing => EditingItem is not null;
-    public BibleVersionCatalogEntry? SelectedVersion { get => _version; set { if (Set(ref _version, value)) { NotifyCommands(); _ = LoadBooksAsync(); } } }
-    public BibleBook? SelectedBook { get => _book; set { if (Set(ref _book, value)) { NotifyCommands(); _ = LoadChaptersAsync(); } } }
-    public int SelectedChapter { get => _chapter; set { if (Set(ref _chapter, value)) { NotifyCommands(); _ = LoadVersesAsync(); } } }
+    public BibleVersionCatalogEntry? SelectedVersion { get => _version; set { if (Set(ref _version, value)) { _isBibleSearchMode = false; NotifyCommands(); _ = LoadBooksAsync(); } } }
+    public BibleBook? SelectedBook { get => _book; set { if (Set(ref _book, value)) { _isBibleSearchMode = false; NotifyCommands(); _ = LoadChaptersAsync(); } } }
+    public int SelectedChapter { get => _chapter; set { if (Set(ref _chapter, value)) { _isBibleSearchMode = false; NotifyCommands(); _ = LoadVersesAsync(); } } }
     public ThemeSelectionItem? SelectedTheme { get => _selectedTheme; private set { if (Set(ref _selectedTheme, value)) { RefreshThemeSelection(); RefreshVisibleItems(); On(nameof(SelectedThemeText)); On(nameof(SelectedThemeColor)); On(nameof(ReferencesTitle)); NotifyCommands(); } } }
     public string SelectedThemeText => SelectedTheme?.DisplayText ?? "Selecionar tema";
     public string SelectedThemeColor => SelectedTheme?.ColorHex ?? "#0066CC";
@@ -131,6 +139,7 @@ public sealed class MessageReferencesViewModel : INotifyPropertyChanged
     public string Observation { get => _observation; set => Set(ref _observation, value); }
     public string Status { get => _status; private set => Set(ref _status, value); }
     public string ThemeSearchText { get => _themeSearchText; set => Set(ref _themeSearchText, value); }
+    public string BibleSearchText { get => _bibleSearchText; set { if (Set(ref _bibleSearchText, value)) SearchBibleCommand.NotifyCanExecuteChanged(); } }
     public string FormattedReference => SelectedBook is null || _selectionStart is null ? "Nenhum versículo selecionado." : $"{SelectedBook.Name} {SelectedChapter}:{_selectionStart}" + (_selectionEnd == _selectionStart ? "" : $"–{_selectionEnd}");
     public string SelectionHint => _selectionStart is null ? "Toque em um versículo para iniciar." : $"{SelectionCount} " + (SelectionCount == 1 ? "versículo" : "versículos");
     public int SelectionCount => _selectionStart is null || _selectionEnd is null ? 0 : _selectionEnd.Value - _selectionStart.Value + 1;
@@ -148,11 +157,12 @@ public sealed class MessageReferencesViewModel : INotifyPropertyChanged
         }
     }
     public bool IsBusy { get => _busy; private set { if (Set(ref _busy, value)) NotifyCommands(); } }
-    public bool IsBibleBusy { get => _bibleBusy; private set { if (Set(ref _bibleBusy, value)) ToggleVerseCommand.NotifyCanExecuteChanged(); } }
+    public bool IsBibleBusy { get => _bibleBusy; private set { if (Set(ref _bibleBusy, value)) { ToggleVerseCommand.NotifyCanExecuteChanged(); SearchBibleCommand.NotifyCanExecuteChanged(); } } }
     public bool IsThemeSheetOpen { get => _themeSheetOpen; private set => Set(ref _themeSheetOpen, value); }
     public bool IsTopicSheetOpen { get => _topicSheetOpen; private set => Set(ref _topicSheetOpen, value); }
 
     public AsyncCommand LoadCommand { get; }
+    public AsyncCommand SearchBibleCommand { get; }
     public AsyncCommand AddCommand { get; }
     public AsyncCommand SaveCommand { get; }
     public AsyncCommand<BibleVerseItemViewModel> ToggleVerseCommand { get; }
@@ -181,13 +191,45 @@ public sealed class MessageReferencesViewModel : INotifyPropertyChanged
         Versions.Clear();
         foreach (var version in (await _versionsService.GetVersionsAsync()).Where(x => x.IsInstalled && x.IsEnabled)) Versions.Add(version);
         await RefreshThemesAsync(null, CancellationToken.None);
-        Messages.Clear();
-        foreach (var message in await _messagesService.SearchAsync(null, null)) Messages.Add(message);
+        await LoadMessagesAsync(RequestedMessageId);
         var active = await _versionsService.GetActiveVersionAsync();
-        SelectedMessage = Messages.FirstOrDefault(x => x.Id == RequestedMessageId) ?? Messages.FirstOrDefault();
         SelectedVersion = Versions.FirstOrDefault(x => x.Id == SelectedMessage?.PreferredBibleVersionId) ?? Versions.FirstOrDefault(x => x.Id == active?.Id) ?? Versions.FirstOrDefault();
         Status = Messages.Count == 0 ? "Selecione o tema e o trecho; a pregação será criada automaticamente ao adicionar." : "Selecione o texto bíblico e um tema.";
     });
+
+    private async Task LoadMessagesAsync(long? preferredMessageId)
+    {
+        var matches = await _messagesService.SearchAsync(null, null);
+        Messages.Clear();
+        foreach (var message in matches) Messages.Add(message);
+        SelectedMessage = Messages.FirstOrDefault(x => x.Id == preferredMessageId) ?? Messages.FirstOrDefault();
+    }
+
+    private bool CanSearchBible() => SelectedVersion is not null && !string.IsNullOrWhiteSpace(BibleSearchText) && !IsBibleBusy;
+
+    private async Task SearchBibleAsync()
+    {
+        if (!CanSearchBible()) return;
+        IsBibleBusy = true;
+        try
+        {
+            Verses.Clear();
+            ClearVerseSelection();
+            _isBibleSearchMode = true;
+            var themedReferences = (await _saved.SearchAsync(null)).Where(item => item.Themes.Count > 0).ToArray();
+            foreach (var verse in await _bible.SearchAsync(SelectedVersion!.Code, BibleSearchText.Trim(), take: 100))
+            {
+                var alreadyAdded = themedReferences.Any(item => item.Reference.BookReferenceId == verse.BookReferenceId &&
+                    item.Reference.Chapter == verse.Chapter && verse.Verse >= item.Reference.VerseStart && verse.Verse <= item.Reference.VerseEnd);
+                Verses.Add(new(verse, alreadyAdded));
+            }
+            Status = Verses.Count == 0
+                ? $"Nenhum versículo encontrado na versão {SelectedVersion.Code}."
+                : $"{Verses.Count} versículo(s) encontrado(s) na versão {SelectedVersion.Code}. Selecione um resultado, escolha o tema e adicione-o à mensagem.";
+        }
+        catch (Exception exception) { Status = exception.Message; }
+        finally { IsBibleBusy = false; }
+    }
 
     private async Task LoadBooksAsync()
     {
@@ -265,6 +307,22 @@ public sealed class MessageReferencesViewModel : INotifyPropertyChanged
 
     private Task ToggleVerseAsync(BibleVerseItemViewModel item)
     {
+        if (_isBibleSearchMode)
+        {
+            if (item.IsAlreadyAdded)
+            {
+                Status = $"{item.DisplayReference} já foi adicionada a um tema.";
+                return Task.CompletedTask;
+            }
+            _book = Books.FirstOrDefault(x => x.BookReferenceId == item.Verse.BookReferenceId)
+                ?? new BibleBook(item.Verse.BookReferenceId, 0, item.Verse.BookName);
+            _chapter = item.Verse.Chapter;
+            On(nameof(SelectedBook)); On(nameof(SelectedChapter));
+            _selectionStart = _selectionEnd = item.Number;
+            RefreshVerseSelection();
+            Status = $"{item.Verse.BookName} {item.Verse.Chapter}:{item.Number} selecionado. Escolha o tema e use Adicionar referência à mensagem.";
+            return Task.CompletedTask;
+        }
         var number = item.Number;
         if (_selectionStart == number && _selectionEnd == number) ClearVerseSelection();
         else if (_selectionStart is null) { _selectionStart = _selectionEnd = number; RefreshVerseSelection(); }
@@ -308,6 +366,8 @@ public sealed class MessageReferencesViewModel : INotifyPropertyChanged
         var comment = string.IsNullOrWhiteSpace(Comment) ? existing?.Reference.Comment : Comment;
         var saved = await _saved.SaveAsync(existing?.Reference.Id, SelectedBook.BookReferenceId, SelectedChapter, _selectionStart.Value, _selectionEnd.Value, comment, SelectedVersion!.Id, themeIds);
         await _references.AddAsync(SelectedMessage!.Id, saved.Reference.Id, null, null, SelectedVersion.Id);
+        if (_isBibleSearchMode)
+            Verses.FirstOrDefault(item => item.Verse.BookReferenceId == SelectedBook.BookReferenceId && item.Verse.Chapter == SelectedChapter && item.Number == _selectionStart.Value)?.MarkAlreadyAdded();
         ResetAfterAdd(); await LoadItemsAsync(); Status = $"Referência adicionada à mensagem e vinculada ao tema {SelectedTheme!.DisplayText}.";
     });
 
@@ -349,12 +409,12 @@ public sealed class MessageReferencesViewModel : INotifyPropertyChanged
     private void ResetForm() { EditingItem = null; Comment = ""; Observation = ""; SelectedTopic = null; SelectedTheme = null; ClearVerseSelection(); }
     private void RefreshVisibleItems() { Items.Clear(); foreach (var item in _allItems.Where(item => SelectedTheme is null || item.Details.Themes.Any(theme => theme.Id == SelectedTheme.Theme.Id))) Items.Add(item); }
     private void ClearVerseSelection() { _selectionStart = _selectionEnd = null; RefreshVerseSelection(); }
-    private void RefreshVerseSelection() { foreach (var item in Verses) item.SetSelected(_selectionStart is not null && item.Number >= _selectionStart && item.Number <= _selectionEnd); On(nameof(FormattedReference)); On(nameof(SelectionHint)); On(nameof(SelectionCount)); NotifyCommands(); }
+    private void RefreshVerseSelection() { foreach (var item in Verses) item.SetSelected(_selectionStart is not null && (_isBibleSearchMode ? item.Verse.BookReferenceId == SelectedBook?.BookReferenceId && item.Verse.Chapter == SelectedChapter && item.Number == _selectionStart : item.Number >= _selectionStart && item.Number <= _selectionEnd)); On(nameof(FormattedReference)); On(nameof(SelectionHint)); On(nameof(SelectionCount)); NotifyCommands(); }
     private void RefreshThemeSelection() { foreach (var item in ThemeOptions) item.IsSelected = item.Theme.Id == SelectedTheme?.Theme.Id; }
     private void RefreshTopicSelection() { foreach (var item in TopicOptions) item.IsSelected = item.Topic?.Id == SelectedTopic?.Id && (item.Topic is not null || SelectedTopic is null); }
     private async Task RunAsync(Func<Task> action) { if (IsBusy) return; IsBusy = true; try { await action(); } catch (Exception exception) { Status = exception.Message; } finally { IsBusy = false; } }
     private static string? Normalize(string value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
-    private void NotifyCommands() { On(nameof(AddRequirementText)); LoadCommand.NotifyCanExecuteChanged(); AddCommand.NotifyCanExecuteChanged(); SaveCommand.NotifyCanExecuteChanged(); EditCommand.NotifyCanExecuteChanged(); DeleteCommand.NotifyCanExecuteChanged();MoveUpCommand.NotifyCanExecuteChanged();MoveDownCommand.NotifyCanExecuteChanged(); CancelEditCommand.NotifyCanExecuteChanged(); SelectMessageCommand.NotifyCanExecuteChanged();DuplicateMessageCommand.NotifyCanExecuteChanged();BackCommand.NotifyCanExecuteChanged(); }
+    private void NotifyCommands() { On(nameof(AddRequirementText)); LoadCommand.NotifyCanExecuteChanged(); SearchBibleCommand.NotifyCanExecuteChanged(); AddCommand.NotifyCanExecuteChanged(); SaveCommand.NotifyCanExecuteChanged(); EditCommand.NotifyCanExecuteChanged(); DeleteCommand.NotifyCanExecuteChanged();MoveUpCommand.NotifyCanExecuteChanged();MoveDownCommand.NotifyCanExecuteChanged(); CancelEditCommand.NotifyCanExecuteChanged(); SelectMessageCommand.NotifyCanExecuteChanged();DuplicateMessageCommand.NotifyCanExecuteChanged();BackCommand.NotifyCanExecuteChanged(); }
     private bool Set<T>(ref T field, T value, [CallerMemberName] string? name = null) { if (EqualityComparer<T>.Default.Equals(field, value)) return false; field = value; On(name); return true; }
     private void On(string? name) => PropertyChanged?.Invoke(this, new(name));
 }

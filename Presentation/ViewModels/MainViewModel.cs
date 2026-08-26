@@ -88,7 +88,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
         OpenReferencesCommand=new AsyncCommand(()=>NavigateAsync("//SavedReferences"));
         OpenDailyVerseChapterCommand=new AsyncCommand(OpenDailyVerseChapterAsync,()=>DailyVerse is not null);
         RetryDailyVerseCommand=new AsyncCommand(LoadDailyVerseAsync,()=>!IsDailyVerseLoading);
-        OpenVerseCardStudioCommand=new AsyncCommand(()=>_navigator.GoToAsync("VerseCardStudio"),()=>!IsBusy&&DailyVerse is not null);
+        OpenVerseCardStudioCommand=new AsyncCommand(OpenVerseCardStudioAsync,()=>!IsBusy&&DailyVerse is not null);
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -303,6 +303,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
     }
     private async Task LoadDailyVerseAsync(){if(IsDailyVerseLoading)return;IsDailyVerseLoading=true;DailyVerseError=string.Empty;try{DailyVerse=await _dailyVerseService.GetDailyVerseAsync();if(DailyVerse is null)DailyVerseError="Nenhuma Bíblia disponível.";}catch(Exception){DailyVerse=null;DailyVerseError="Não foi possível carregar o versículo do dia.";}finally{IsDailyVerseLoading=false;}}
     private Task OpenDailyVerseChapterAsync()=>DailyVerse is null?Task.CompletedTask:_navigator.GoToAsync("//BibleReader",new Dictionary<string,object>{{"BookReferenceId",DailyVerse.BookReferenceId},{"Chapter",DailyVerse.Chapter},{"Verse",DailyVerse.Verse},{"VersionCode",DailyVerse.BibleVersionCode}});
+    private async Task OpenVerseCardStudioAsync(){try{await _navigator.GoToAsync("VerseCardStudio");}catch(Exception ex){Status=$"Não foi possível abrir o Gerador de Cards. {ex.Message}";}}
 
     private static async Task NavigateAsync(
         string route)
