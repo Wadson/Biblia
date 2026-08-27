@@ -51,9 +51,9 @@ public partial class AppShell : Shell
         Items.Add(CreateFlyoutItem<ThemesPage>(services, "Temas", "Themes", "icon_themes.png"));
         Items.Add(CreateFlyoutItem<SavedReferencesPage>(services, "Referências guardadas", "SavedReferences", "icon_bookmark.png"));
 
-        // ── MENSAGENS E PREGAÇÕES ──
-        Items.Add(CreateSection("MENSAGENS E PREGAÇÕES"));
-        Items.Add(CreateFlyoutItem<MessageBibleReferencesPage>(services, "Mensagens e Pregações", "MessageBibleReferences", "icon_preach.png"));
+        // ── TEMAS E VERSÍCULOS ──
+        Items.Add(CreateSection("TEMAS E VERSÍCULOS"));
+        Items.Add(CreateFlyoutItem<MessageBibleReferencesPage>(services, "Vinculação de Temas", "MessageBibleReferences", "icon_preach.png"));
 
         // ── SISTEMA E CONFIGURAÇÕES ──
         Items.Add(CreateSection("SISTEMA E CONFIGURAÇÕES"));
@@ -98,10 +98,6 @@ public partial class AppShell : Shell
     private static void RegisterRoutes()
     {
         Routing.RegisterRoute("BibleComparison", typeof(BibleComparisonPage));
-        Routing.RegisterRoute("Messages",typeof(MessagesPage));
-        Routing.RegisterRoute("MessageTopics",typeof(MessageTopicsPage));
-        Routing.RegisterRoute("MessageReferences",typeof(MessageReferencesPage));
-        Routing.RegisterRoute("MessageDuplication",typeof(MessageDuplicationPage));
         Routing.RegisterRoute("VerseCardStudio",typeof(VerseCardStudioPage));
     }
 }

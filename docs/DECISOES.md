@@ -617,3 +617,26 @@ VALIDAÇÃO: 19/19 testes aprovados; builds Android e Windows concluídos, com W
 - Após “Gerar prévia”, a página retorna ao topo para apresentar imediatamente “Gerar PDF”, sem exigir que o usuário procure a ação fora da área visível.
 - Estados visuais, regras de geração, conteúdo do relatório e exportação permaneceram inalterados.
 - Validação: build Windows isolado concluído com 0 avisos e 0 erros.
+
+# Checkpoint — layout desktop de Mensagens e Pregações (27/08/2026)
+
+- Em janelas a partir de 800 dp, a tela mantém o seletor bíblico na coluna esquerda e reúne, na coluna direita, o formulário de vínculo e as referências já adicionadas.
+- A lista de referências deixa de ocupar uma faixa integral abaixo do seletor, aproveitando melhor a área visível em computadores com resolução de 1024×768 ou superior e reduzindo a rolagem necessária.
+- Em telas estreitas, o painel direito continua empilhado depois do seletor bíblico, preservando o comportamento responsivo anterior.
+- Os controles, bindings, comandos e o fluxo de seleção de versão, livro, capítulo e versículo não foram alterados; a mudança é exclusivamente de composição visual.
+- Validação: 11 testes relacionados a mensagens aprovados; build e publicação Windows Release executados para `D:\Publicacao\Biblia`.
+
+# Checkpoint — fluxo centrado em Tema (27/08/2026)
+
+- O fluxo principal foi reduzido a `Tema → versículos`: o usuário escolhe um tema e vincula o trecho bíblico diretamente à referência salva, sem criar ou selecionar Mensagem, Pregação, Estudo ou Devocional.
+- A tela consolidada anteriormente chamada “Mensagens e Pregações” foi preservada e passou a se chamar “Vinculação de Temas” no menu e no cabeçalho; as rotas antigas de edição de mensagens, tópicos, referências contextuais e duplicação deixaram de ser registradas no Shell.
+- A pesquisa global não consulta mais mensagens, tópicos ou observações contextuais e a Home apresenta somente Temas e Versículos vinculados.
+- Relatórios continuam com prévia, subtítulo, introdução, conclusão, versão bíblica e exportação PDF, mas aceitam um único Tema como origem. O nome do Tema é também o título automático do documento e o tipo editorial exibido é “TEMA”.
+- O banco existente e seus dados legados foram preservados para compatibilidade; nenhuma migração destrutiva foi aplicada e os bancos bíblicos permanecem somente leitura.
+
+# Checkpoint — formulário de Temas responsivo no computador (27/08/2026)
+
+- A largura útil da tela de Temas passou a preencher o computador até 1180 dp, mantendo margens consistentes.
+- A partir de 900 dp, a lista de temas e o editor são organizados lado a lado, com proporção equilibrada e espaçamento explícito; no celular, continuam empilhados.
+- O cabeçalho ganhou composição adaptativa: título e ações ficam em uma linha no computador e as ações ocupam uma segunda linha dividida no celular, evitando cortes em 1024×768.
+- Pesquisa, seleção, criação, edição, cores, validação e exclusão mantêm os mesmos comandos e regras de persistência.

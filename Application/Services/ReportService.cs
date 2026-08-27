@@ -66,7 +66,7 @@ public sealed class ReportService(IMessageRepository messages, ISavedReferenceRe
             var items = resolved.Values.Where(x => !assigned.Contains(x.SavedReferenceId) && x.Themes.Any(t => t.Id == theme.Id)).OrderBy(x => x.BookName).ThenBy(x => x.Chapter).ThenBy(x => x.VerseStart).ToArray();
             foreach (var item in items) assigned.Add(item.SavedReferenceId); sections.Add(new(theme, theme.Name, theme.Description, items));
         }
-        return new("PREGAÇÃO", request.Title.Trim(), Clean(request.Subtitle), Clean(request.Introduction), Clean(request.Conclusion),
+        return new("TEMA", request.Title.Trim(), Clean(request.Subtitle), Clean(request.Introduction), Clean(request.Conclusion),
             request.UsePreferredReferenceVersions ? "Versões indicadas em cada referência" : FormatVersion(defaultVersion), clock.UtcNow, sections);
     }
 
