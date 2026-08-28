@@ -5,7 +5,22 @@ obj/
 Debug/
 Release/
 
+# Ignorar perfis de publicação
+Properties/PublishProfiles/
+
+# Ignorar pacotes gerados (MSIX, instaladores, etc.)
+AppPackages/
+Installer/
+*.msix
+*.appx
+*.appxsym
+*.cer
+*.pfx
+*.exe
+
 # Outros arquivos que não precisam ir para o GitHub
 *.user
 *.suo
 *.log
+*.tmp
+*.cache
