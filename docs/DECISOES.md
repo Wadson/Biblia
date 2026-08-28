@@ -640,3 +640,9 @@ VALIDAÇÃO: 19/19 testes aprovados; builds Android e Windows concluídos, com W
 - A partir de 900 dp, a lista de temas e o editor são organizados lado a lado, com proporção equilibrada e espaçamento explícito; no celular, continuam empilhados.
 - O cabeçalho ganhou composição adaptativa: título e ações ficam em uma linha no computador e as ações ocupam uma segunda linha dividida no celular, evitando cortes em 1024×768.
 - Pesquisa, seleção, criação, edição, cores, validação e exclusão mantêm os mesmos comandos e regras de persistência.
+
+# Checkpoint — publicação MSIX pelo Visual Studio (27/08/2026)
+
+- A configuração global `WindowsPackageType=None`, que forçava somente a distribuição Windows não empacotada, foi removida.
+- O target Windows volta a usar o empacotamento MSIX padrão do .NET MAUI, permitindo que o Visual Studio apresente “Publicar” ao clicar no projeto `Biblia` com `Windows Machine` selecionado.
+- O manifesto Windows existente foi preservado; certificado, versão e destino do instalador são definidos pelo assistente de publicação do Visual Studio.
