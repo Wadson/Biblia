@@ -571,6 +571,13 @@ VALIDAÇÃO: 19/19 testes aprovados; builds Android e Windows concluídos, com W
 - O `InternalBackCommand` do `PageHeaderView` passou a ser criado antes de `InitializeComponent`; assim, o binding XAML recebe o comando já na primeira avaliação e o botão funciona em todas as instâncias do cabeçalho.
 - A barra arrastável da galeria foi substituída por setas laterais temáticas de 44×54 px. Toque executa avanço por página e toque prolongado repete a rolagem; os controles indicam visualmente quando o início ou o fim foi alcançado.
 
+# Checkpoint — modernização do menu lateral (12/09/2026)
+
+- O cabeçalho do Flyout passou a apresentar o ícone da Bíblia em destaque, dentro de uma superfície azul-marinho com contorno dourado, acompanhado da marca BíbliaTema Premium e de uma descrição curta.
+- Os itens de navegação deixaram de usar cards brancos pesados no estado normal. A opção atual usa `BtSelectedBackground`, `BtSelectedBorder`, texto `BtPrimary` e uma faixa lateral azul para melhorar orientação e contraste.
+- Ícones receberam recipientes uniformes de 38 px, as seções ganharam tipografia compacta e a largura/áreas de toque continuam adequadas a celular, tablet e desktop.
+- A validação revelou colisão preexistente entre backups criados no mesmo segundo. O nome do ZIP passou a combinar milissegundos e identificador único, preservando conteúdo e fluxo e garantindo a criação do backup de segurança durante uma restauração rápida.
+
 # Checkpoint — integridade de Temas e resiliência do Estúdio de cards (22/08/2026)
 
 - O estado de edição de Tema passou a ser explícito em `EditingThemeId`; selecionar um item não altera o modo do formulário, e editar exige a ação dedicada. Novo, cancelar, inclusão concluída, exclusão e recarga zeram o identificador.
@@ -646,3 +653,50 @@ VALIDAÇÃO: 19/19 testes aprovados; builds Android e Windows concluídos, com W
 - A configuração global `WindowsPackageType=None`, que forçava somente a distribuição Windows não empacotada, foi removida.
 - O target Windows volta a usar o empacotamento MSIX padrão do .NET MAUI, permitindo que o Visual Studio apresente “Publicar” ao clicar no projeto `Biblia` com `Windows Machine` selecionado.
 - O manifesto Windows existente foi preservado; certificado, versão e destino do instalador são definidos pelo assistente de publicação do Visual Studio.
+
+# Checkpoint — organização da Vinculação de Temas (03/09/2026)
+
+- A tela passou a seguir o fluxo visual `Tema → trecho bíblico → vínculo`, com título, subtítulo e seções numeradas.
+- O seletor de tema ocupa a faixa superior em qualquer largura, evitando que o usuário precise descer até o fim da página no celular.
+- Pesquisa e navegação por versão, livro e capítulo foram reunidas em um único cartão; o painel direito concentra o trecho selecionado, o comentário e a lista já vinculada.
+- O sheet de tópico, residual do fluxo antigo de mensagens, foi removido da View. Bindings, comandos e regras de persistência permaneceram os mesmos.
+- Validação: 7 testes de `MessageReferencesViewModel` aprovados; build da solução com 0 avisos e 0 erros; publicação Windows Release para `D:\Publicacao\Biblia`.
+
+# Checkpoint — menu lateral expansível no portal web (12/09/2026)
+
+- O menu lateral do portal ganhou uma ação no topo para alternar entre os estados expandido e compacto.
+- No modo compacto, a barra mede 82 px e apresenta somente a marca da Bíblia e os ícones de navegação, todos em áreas de toque uniformes; rótulos e separadores são ocultados sem remover destinos ou descrições acessíveis.
+- O roteador web passou a usar renderização interativa no servidor, permitindo que a nova ação — e os demais comandos Blazor — recebam eventos no navegador.
+- Validação: build Release sem avisos/erros e verificação visual em desktop dos dois estados do menu.
+
+# Checkpoint — pesquisa bíblica multiversão e cabeçalhos compactos no portal web (12/09/2026)
+
+- A pesquisa bíblica passa a iniciar em “Todas as versões instaladas”, sem remover a possibilidade de selecionar uma tradução específica.
+- Quando há múltiplas versões selecionadas, o limite da pesquisa é repartido entre elas, assegurando cobertura de cada tradução em vez de concentrar todos os itens na primeira versão.
+- `PageHeader` foi refinado como uma faixa compacta e destacada que reúne título, Voltar e Início para as páginas que já usam o componente compartilhado.
+- A tela de Temas ganhou editor e lista mais legíveis, indicador de quantidade, cores identificáveis, estado vazio e ações agrupadas, preservando os mesmos serviços e comandos de salvar, filtrar, editar, excluir e vincular.
+- Validação: build Release com 0 avisos/erros; teste `BibleSearchServiceTests` aprovado; revisão visual local confirmou resultados em ACF, ARA, ARC, AS21, KJF, NBV e NVI.
+
+# Checkpoint — organização visual de Configurações no portal web (12/09/2026)
+
+- As ações de tipografia do PDF foram agrupadas numa única faixa: “Salvar tamanhos” e “Restaurar tamanhos padrão” ficam lado a lado no computador, com espaçamento de 10 px; no celular, continuam acessíveis em uma coluna.
+- Configurações agora organiza tipografia, ordenação dos temas, backup/restauração e Sobre em cartões consistentes, sem alteração dos valores, serviços ou comandos existentes.
+- Validação: build Release com 0 avisos/erros e revisão visual local do alinhamento das ações e das quatro seções da página.
+
+# Checkpoint — foco unificado dos botões no portal web (12/09/2026)
+
+- Todos os botões, links com aparência de botão, ações de diálogo, tabela, cabeçalho e menu lateral receberam um estado de foco compartilhado com borda azul, contorno azul e halo azul claro.
+- Botões primários, secundários, de sucesso e de perigo preservam suas cores sem se tornarem brancos ao receber foco; os secundários usam fundo azul-claro e texto azul nesse estado.
+- Validação: build Release com 0 avisos/erros e inspeção local confirmou contorno azul de 3 px, borda física de 1 px e halo visível no foco.
+
+# Checkpoint — reforço de foco e clique dos botões no portal web (12/09/2026)
+
+- O foco foi reforçado para também cobrir o estado pressionado por clique/toque (`active`), que pode ser diferente do foco por teclado conforme o navegador.
+- O estado interativo agora força fundo, texto e borda de cada tipo de botão com prioridade sobre o estilo nativo do navegador; a borda física passou a 2 px.
+- Validação: prévia local confirmou botão primário focado em `#0066CC`, texto branco, borda sólida de 2 px, contorno azul de 3 px e halo `#B8D4F0`, sem fundo branco.
+
+# Checkpoint — estado de ponteiro dos botões no portal web (12/09/2026)
+
+- O estado `hover` foi explicitamente padronizado para mouse: borda azul de 2 px e halo azul-claro em todos os botões e links de ação.
+- Primários, secundários, sucesso e perigo preservam cores próprias ao passar o mouse; nenhum retorna ao fundo branco nativo.
+- Validação: build Release com 0 avisos/erros.

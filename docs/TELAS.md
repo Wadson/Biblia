@@ -25,9 +25,9 @@
 - View / ViewModel: `MessageBibleReferencesPage` / `MessageReferencesViewModel`
 - Serviços: mensagens, tópicos, vínculos, referências salvas, versões e repositório bíblico.
 - Comandos: carregar, adicionar, salvar observação e remover vínculo.
-- Campos: mensagem, versão, livro, capítulo, intervalo, tópico e observação contextual.
-- Mobile: formulário vertical com pares versão/livro e início/fim.
-- Desktop: o mesmo formulário mantém pares de campos e lista de vínculos.
+- Campos: tema, versão, livro, capítulo, intervalo e comentário.
+- Mobile: tema no topo; trecho bíblico e vínculo empilhados.
+- Desktop: tema em faixa única; seletor bíblico à esquerda e vínculo/lista à direita.
 ## Correção final — leitor e comparação multi-versão
 
 - A lista de versículos usa `SelectionMode=None`; cada toque executa `SelectVerseCommand` e o destaque depende exclusivamente de `BibleVerseItemViewModel.IsSelected`.

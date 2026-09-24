@@ -16,7 +16,7 @@ public sealed class BackupService(IAppDatabase database, IAppPaths paths, ILogge
         var created = DateTimeOffset.UtcNow;
         var directory = Path.Combine(paths.AppDataDirectory, "backups");
         Directory.CreateDirectory(directory);
-        var backupPath = Path.Combine(directory, $"bibliatema-{created:yyyyMMddHHmmss}.zip");
+        var backupPath = Path.Combine(directory, $"bibliatema-{created:yyyyMMddHHmmssfff}-{Guid.NewGuid():N}.zip");
         var snapshotPath = Path.Combine(directory, $".{Guid.NewGuid():N}.db");
         try
         {
